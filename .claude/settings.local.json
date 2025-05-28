@@ -8,7 +8,11 @@
       "Bash(find:*)",
       "mcp__curl__curl",
       "mcp__brave-search__brave_web_search",
-      "Bash(git init:*)"
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(diff:*)",
+      "Bash(source:*)",
+      "Bash(uv pip install:*)"
     ],
     "deny": []
   }

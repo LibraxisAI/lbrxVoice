@@ -1,23 +1,44 @@
-# MLX Whisper Servers
+# lbrxWhisper
 
-Dual MLX Whisper servers for real-time and batch speech-to-text transcription.
+Complete speech processing pipeline with Whisper ASR and TTS models, optimized for Apple Silicon using MLX.
 
 ## Features
 
+### Speech Recognition (ASR)
 - **Batch Transcription Server**:
-  - Process pre-recorded audio/video files with the large Whisper-v3 model (3GB)
+  - Process pre-recorded audio/video files with Whisper large-v3 model
   - REST API with OpenAI-compatible endpoints
-  - Support for ffmpeg-compatible audio/video formats
+  - Support for all ffmpeg-compatible audio/video formats
 
 - **Real-time Transcription Server**:
   - Stream audio transcription in real-time with WebSockets
   - Interactive TUI dashboard with spectrograms and timestamp editing
-  - Low-latency processing with a smaller MLX Whisper model
+  - Low-latency processing with smaller Whisper models
+
+### Text-to-Speech (TTS)
+- **DIA 1.6B TTS**:
+  - WebSocket endpoint for real-time streaming synthesis
+  - REST API for batch processing and fine-tuning
+  - Multi-speaker dialogue support with `[S1]`, `[S2]` tags
+  - Non-verbal communications (laughs, coughs, sighs)
+  - Voice cloning capabilities
+
+- **CSM-MLX TTS**:
+  - REST API endpoint
+  - Multiple speaker voices (0-3)
+  - Optimized for MLX on Apple Silicon
+
+### AI Conversational Agent
+- **Voice Chat with Qwen3-8B**:
+  - Real-time voice conversations
+  - Speech → Qwen3 → TTS pipeline
+  - Support for both DIA and CSM voices
 
 ## Setup
 
 ### Prerequisites
 
+- Apple Silicon Mac (M1/M2/M3)
 - Python 3.12 or higher
 - FFmpeg installed on your system
 - uv package manager
@@ -25,7 +46,11 @@ Dual MLX Whisper servers for real-time and batch speech-to-text transcription.
 ### Installation
 
 ```bash
-# Create a virtual environment (if not already done)
+# Clone the repository
+git clone https://github.com/LibraxisAI/lbrxWhisper.git
+cd lbrxWhisper
+
+# Create virtual environment
 uv venv .venv
 source .venv/bin/activate
 
@@ -33,129 +58,149 @@ source .venv/bin/activate
 uv pip install -e .
 ```
 
+### Download Models
+
+1. **Whisper models** are downloaded automatically on first use
+2. **DIA model** conversion:
+   ```bash
+   python dia_mlx_converter.py
+   ```
+3. **CSM-MLX** is already available in the system
+
 ## Usage
 
-### Batch Transcription Server
+### Starting the Servers
 
-Start the batch transcription server:
-
+#### Whisper Servers
 ```bash
+# Batch transcription server (port 8123)
 whisper-batch-server
-# or
-python -m whisper_servers batch
-```
 
-The server will run on port 8123 by default.
-
-### Real-time Transcription Server
-
-Start the real-time transcription server:
-
-```bash
+# Real-time transcription server (port 8000)
 whisper-realtime-server
-# or
-python -m whisper_servers realtime
 ```
 
-The server will run on port 8000 by default.
+#### TTS Servers
+```bash
+# DIA WebSocket server (port 8124)
+python -m tts_servers dia-ws
+
+# DIA REST API (port 8125)
+python -m tts_servers dia-rest
+
+# CSM REST API (port 8126)
+python -m tts_servers csm-rest
+```
 
 ### API Documentation
 
-Once the servers are running, you can access the API documentation at:
+Once running, access the API documentation at:
+- Whisper Batch: http://localhost:8123/docs
+- Whisper Real-time: http://localhost:8000/docs
+- DIA REST: http://localhost:8125/docs
+- CSM REST: http://localhost:8126/docs
 
-- Batch server: http://localhost:8123/docs
-- Real-time server: http://localhost:8000/docs
+### Testing the Pipeline
 
-### Testing the Servers
-
-#### Batch Transcription
-
-Use the included test client to transcribe an audio file:
-
+#### Full Pipeline Test
 ```bash
-python test_client.py path/to/audio/file.mp3
+python test_tts_pipeline.py
 ```
 
-#### Real-time Transcription
-
-Use the included WebSocket client to stream audio in real-time:
-
+#### Conversational AI
 ```bash
-# Stream from an audio file
-python websocket_client.py --file path/to/audio/file.mp3
-
-# Stream from microphone
-python websocket_client.py --microphone
+python conversational_agent.py
 ```
 
-### TUI Dashboard
-
-A text-based user interface (TUI) dashboard is available for monitoring and managing transcription jobs:
-
+#### Real-time Voice Chat
 ```bash
-python tui_dashboard.py
+python voice_chat_realtime.py
+```
+
+### Example API Usage
+
+#### TTS Generation (DIA)
+```python
+import requests
+
+# Synchronous generation
+response = requests.post(
+    "http://localhost:8125/synthesize_sync",
+    json={
+        "text": "[S1] Hello from DIA! [S2] This is amazing.",
+        "temperature": 0.8
+    }
+)
+audio_base64 = response.json()["audio_data"]
+```
+
+#### TTS Generation (CSM)
+```python
+# With speaker selection
+response = requests.post(
+    "http://localhost:8126/synthesize_sync",
+    json={
+        "text": "Hello from CSM model!",
+        "speaker_id": "1"  # Choose speaker 0-3
+    }
+)
+```
+
+#### Full Voice Pipeline
+```python
+from test_tts_pipeline import TTSPipelineTester
+
+tester = TTSPipelineTester()
+# Generate speech
+audio = tester.test_dia_rest("Hello world!")
+# Transcribe it back
+text = tester.test_whisper_batch(audio, "test.wav")
 ```
 
 ## Configuration
 
-Configuration options can be set via environment variables:
+Environment variables:
+- `BATCH_PORT`: Whisper batch port (default: 8123)
+- `REALTIME_PORT`: Whisper realtime port (default: 8000)
+- `DIA_WS_PORT`: DIA WebSocket port (default: 8124)
+- `DIA_REST_PORT`: DIA REST port (default: 8125)
+- `CSM_REST_PORT`: CSM REST port (default: 8126)
+- `MODELS_DIR`: Model storage directory
+- `HF_TOKEN`: Hugging Face token for model downloads
 
-- `BATCH_PORT`: Port for batch transcription server (default: 8123)
-- `BATCH_MODEL`: Model for batch transcription (default: large-v3)
-- `REALTIME_PORT`: Port for real-time transcription server (default: 8000)
-- `REALTIME_MODEL`: Model for real-time transcription (default: tiny)
-- `MODELS_DIR`: Directory for storing models (default: models/)
-- `UPLOAD_DIR`: Directory for uploaded files (default: uploads/)
-- `RESULTS_DIR`: Directory for storing results (default: results/)
-- `MAX_CONCURRENT_JOBS`: Maximum number of concurrent transcription jobs (default: 2)
+## Project Structure
 
-## Example API Usage
-
-### Batch Transcription
-
-```python
-import requests
-
-url = "http://localhost:8123/v1/audio/transcriptions"
-files = {"file": open("audio.mp3", "rb")}
-data = {"model": "whisper-large-v3"}
-
-response = requests.post(url, files=files, data=data)
-result = response.json()
-print(result["text"])
+```
+lbrxWhisper/
+├── whisper_servers/     # ASR servers
+│   ├── batch/          # Batch transcription
+│   └── realtime/       # Real-time streaming
+├── tts_servers/        # TTS servers
+│   ├── dia/           # DIA 1.6B implementation
+│   ├── csm/           # CSM-MLX wrapper
+│   └── common/        # Shared utilities
+├── mlx_whisper/        # Core Whisper MLX
+├── conversational_agent.py  # AI chat with voice
+├── voice_chat_realtime.py   # Real-time voice loop
+└── test_tts_pipeline.py     # Integration tests
 ```
 
-### Real-time Transcription
+## Performance
 
-```python
-import asyncio
-import websockets
-import json
-import base64
-
-async def transcribe_realtime():
-    uri = "ws://localhost:8000/v1/audio/transcriptions"
-    async with websockets.connect(uri) as websocket:
-        # Read audio chunks and send them
-        with open("audio.wav", "rb") as f:
-            chunk = f.read(4000)  # 4KB chunks
-            while chunk:
-                # Send as base64-encoded JSON
-                await websocket.send(json.dumps({
-                    "audio": base64.b64encode(chunk).decode("utf-8")
-                }))
-                
-                # Receive transcription
-                response = await websocket.recv()
-                result = json.loads(response)
-                print(result["text"])
-                
-                # Read next chunk
-                chunk = f.read(4000)
-
-asyncio.run(transcribe_realtime())
-```
+On M3 Max (48GB RAM):
+- Full pipeline uses ~20-25GB RAM
+- Whisper large-v3: ~3-4GB
+- DIA 1.6B: ~6-7GB
+- CSM 1B: ~4GB
+- Qwen3-8B-Q4: ~6-8GB
 
 ## License
 
-This project is licensed under the same license as MLX and MLX Whisper.
+Licensed under Apache 2.0. See LICENSE file for details.
+
+## Acknowledgments
+
+- [MLX](https://github.com/ml-explore/mlx) by Apple
+- [DIA](https://github.com/nari-labs/dia) by Nari Labs
+- [CSM](https://github.com/senstella/csm-mlx) by Senstella
+- [Whisper](https://github.com/openai/whisper) by OpenAI
