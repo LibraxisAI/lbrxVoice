@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh repo clone:*)",
+      "mcp__memory__read_graph",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(find:*)",
+      "mcp__curl__curl",
+      "mcp__brave-search__brave_web_search",
+      "Bash(git init:*)"
+    ],
+    "deny": []
+  }
+}
