@@ -12,7 +12,11 @@
       "Bash(git add:*)",
       "Bash(diff:*)",
       "Bash(source:*)",
-      "Bash(uv pip install:*)"
+      "Bash(uv pip install:*)",
+      "Bash(git commit:*)",
+      "Bash(python:*)",
+      "mcp__github__get_file_contents",
+      "mcp__memory__search_nodes"
     ],
     "deny": []
   }

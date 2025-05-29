@@ -13,9 +13,9 @@ class TTSConfig(BaseSettings):
     csm_model_path: str = Field(default="./models/csm_mlx", env="CSM_MODEL_PATH")
     
     # Server settings
-    dia_ws_port: int = Field(default=8124, env="DIA_WS_PORT")
-    dia_rest_port: int = Field(default=8125, env="DIA_REST_PORT")
-    csm_rest_port: int = Field(default=8126, env="CSM_REST_PORT")
+    dia_ws_port: int = Field(default=8129, env="DIA_WS_PORT")
+    dia_rest_port: int = Field(default=8132, env="DIA_REST_PORT")
+    csm_rest_port: int = Field(default=8135, env="CSM_REST_PORT")
     
     # Audio settings
     sample_rate: int = Field(default=44100, env="TTS_SAMPLE_RATE")

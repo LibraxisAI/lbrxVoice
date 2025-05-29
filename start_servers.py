@@ -1,131 +1,86 @@
 #!/usr/bin/env python3
 """
-Start all servers for testing
+Start all servers for TTS pipeline testing
 """
 
 import subprocess
 import time
-import os
-import signal
 import sys
+import signal
+import os
+from pathlib import Path
 
-class ServerManager:
-    def __init__(self):
-        self.processes = []
-        
-    def start_server(self, name, command, port):
-        """Start a server process"""
-        print(f"\n🚀 Starting {name} on port {port}...")
-        
-        env = os.environ.copy()
-        env['PYTHONUNBUFFERED'] = '1'
-        
-        process = subprocess.Popen(
-            command,
-            shell=True,
-            env=env,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            preexec_fn=os.setsid if sys.platform != 'win32' else None
-        )
-        
-        self.processes.append((name, process, port))
-        
-        # Wait a bit for server to start
-        time.sleep(3)
-        
-        # Check if process is still running
-        if process.poll() is None:
-            print(f"✅ {name} started successfully")
-            return True
-        else:
-            stdout, stderr = process.communicate()
-            print(f"❌ {name} failed to start")
-            print(f"Error: {stderr}")
-            return False
-            
-    def stop_all(self):
-        """Stop all server processes"""
-        print("\n🛑 Stopping all servers...")
-        
-        for name, process, port in self.processes:
-            if process.poll() is None:
-                if sys.platform != 'win32':
-                    os.killpg(os.getpgid(process.pid), signal.SIGTERM)
-                else:
-                    process.terminate()
-                process.wait()
-                print(f"✅ Stopped {name}")
-                
-    def run_test_servers(self):
-        """Start servers needed for testing"""
-        
-        servers = [
-            ("Whisper Batch", "whisper-batch-server", 8123),
-            ("CSM REST", "python -m tts_servers csm-rest", 8126),
-        ]
-        
-        try:
-            for name, cmd, port in servers:
-                if not self.start_server(name, cmd, port):
-                    print(f"\n❌ Failed to start {name}. Stopping all servers.")
-                    self.stop_all()
-                    return False
-                    
-            print("\n✅ All servers started successfully!")
-            print("\nServers running:")
-            print("- Whisper Batch: http://localhost:8123")
-            print("- CSM REST: http://localhost:8126")
-            print("\nPress Ctrl+C to stop all servers")
-            
-            # Keep running
-            while True:
-                time.sleep(1)
-                
-        except KeyboardInterrupt:
-            print("\n\nReceived interrupt signal")
-            self.stop_all()
-            
-    def test_individual_imports(self):
-        """Test if modules can be imported"""
-        print("\n🧪 Testing module imports...")
-        
-        tests = [
-            ("Whisper servers", "import whisper_servers"),
-            ("TTS servers", "import tts_servers"),
-            ("CSM module", "from tts_servers.csm import rest_api"),
-        ]
-        
-        for name, import_cmd in tests:
-            try:
-                exec(import_cmd)
-                print(f"✅ {name} - OK")
-            except Exception as e:
-                print(f"❌ {name} - Error: {e}")
-                
+processes = []
+
+def signal_handler(sig, frame):
+    print("\n\nShutting down servers...")
+    for p in processes:
+        p.terminate()
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
+
+def start_server(name, command, port):
+    """Start a server in background"""
+    print(f"Starting {name} on port {port}...")
+    
+    env = os.environ.copy()
+    env['PYTHONUNBUFFERED'] = '1'
+    
+    log_file = open(f"logs/{name}.log", "w")
+    process = subprocess.Popen(
+        command,
+        shell=True,
+        stdout=log_file,
+        stderr=subprocess.STDOUT,
+        env=env
+    )
+    processes.append(process)
+    return process
 
 def main():
-    manager = ServerManager()
+    # Create logs directory
+    Path("logs").mkdir(exist_ok=True)
     
-    # First test imports
-    manager.test_individual_imports()
+    print("🚀 Starting all servers for TTS pipeline...\n")
     
-    # Ask user what to do
-    print("\n📋 Options:")
-    print("1. Start test servers (Whisper + CSM)")
-    print("2. Test imports only")
-    print("3. Exit")
+    # Set environment variables for custom ports
+    env = os.environ.copy()
+    env['REALTIME_PORT'] = '8126'  # Override default realtime port
+    env['DIA_WS_PORT'] = '8129'
+    env['DIA_REST_PORT'] = '8132'
+    env['CSM_REST_PORT'] = '8135'
     
-    choice = input("\nChoice: ")
+    # Start Whisper servers
+    start_server("whisper-batch", "python -m whisper_servers batch", 8123)
+    time.sleep(3)
     
-    if choice == "1":
-        manager.run_test_servers()
-    elif choice == "2":
-        print("Import tests completed.")
-    else:
-        print("Exiting.")
-        
+    start_server("whisper-realtime", f"REALTIME_PORT=8126 python -m whisper_servers realtime", 8126)
+    time.sleep(3)
+    
+    # Start TTS servers
+    start_server("dia-ws", f"DIA_WS_PORT=8129 python -m tts_servers dia-ws", 8129)
+    time.sleep(3)
+    
+    start_server("dia-rest", f"DIA_REST_PORT=8132 python -m tts_servers dia-rest", 8132)
+    time.sleep(3)
+    
+    start_server("csm-rest", f"CSM_REST_PORT=8135 python -m tts_servers csm-rest", 8135)
+    time.sleep(5)
+    
+    print("\n✅ Servers started:")
+    print("  - Whisper Batch: http://localhost:8123")
+    print("  - Whisper Realtime: ws://localhost:8126")
+    print("  - DIA WebSocket: ws://localhost:8129")
+    print("  - DIA REST: http://localhost:8132")
+    print("  - CSM REST: http://localhost:8135")
+    
+    print("\n📊 Logs available in ./logs/")
+    print("\nPress Ctrl+C to stop all servers")
+    
+    # Keep running
+    while True:
+        time.sleep(1)
 
 if __name__ == "__main__":
     main()
