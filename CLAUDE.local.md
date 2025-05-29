@@ -1,0 +1,4 @@
+- UV first approach workflow: 
+  - `uv init` to initialize
+  - `uv add -r requirements.txt` to add requirements
+  - `uv sync` to synchronize dependencies

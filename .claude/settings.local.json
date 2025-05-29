@@ -16,7 +16,15 @@
       "Bash(git commit:*)",
       "Bash(python:*)",
       "mcp__github__get_file_contents",
-      "mcp__memory__search_nodes"
+      "mcp__memory__search_nodes",
+      "Bash(git checkout:*)",
+      "Bash(uv add:*)",
+      "Bash(uv venv:*)",
+      "Bash(uv sync:*)",
+      "Bash(curl:*)",
+      "Bash(cat:*)",
+      "Bash(CSM_REST_PORT=8135 python -m tts_servers csm-rest)",
+      "mcp__memory__create_entities"
     ],
     "deny": []
   }
