@@ -2,3 +2,4 @@
   - `uv init` to initialize
   - `uv add -r requirements.txt` to add requirements
   - `uv sync` to synchronize dependencies
+- Project state snapshot for /compact: zapamiętaj dokładny stan projektu bo robimy /compact

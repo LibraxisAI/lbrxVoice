@@ -1,0 +1,400 @@
+{
+  "version": "1",
+  "metadata": {
+    "python_version": "3.12.8"
+  },
+  "packages": {
+    "accelerate": {
+      "version": "1.7.0",
+      "source": "pypi"
+    },
+    "aiohappyeyeballs": {
+      "version": "2.6.1",
+      "source": "pypi"
+    },
+    "aiohttp": {
+      "version": "3.11.18",
+      "source": "pypi"
+    },
+    "aiosignal": {
+      "version": "1.3.2",
+      "source": "pypi"
+    },
+    "annotated-types": {
+      "version": "0.7.0",
+      "source": "pypi"
+    },
+    "anyio": {
+      "version": "4.9.0",
+      "source": "pypi"
+    },
+    "attrs": {
+      "version": "25.3.0",
+      "source": "pypi"
+    },
+    "beautifulsoup4": {
+      "version": "4.12.3",
+      "source": "pypi"
+    },
+    "certifi": {
+      "version": "2025.4.26",
+      "source": "pypi"
+    },
+    "charset-normalizer": {
+      "version": "3.4.2",
+      "source": "pypi"
+    },
+    "click": {
+      "version": "8.2.0",
+      "source": "pypi"
+    },
+    "dataclasses-json": {
+      "version": "0.6.7",
+      "source": "pypi"
+    },
+    "deprecated": {
+      "version": "1.2.18",
+      "source": "pypi"
+    },
+    "dirtyjson": {
+      "version": "1.0.8",
+      "source": "pypi"
+    },
+    "distro": {
+      "version": "1.9.0",
+      "source": "pypi"
+    },
+    "filelock": {
+      "version": "3.18.0",
+      "source": "pypi"
+    },
+    "frozenlist": {
+      "version": "1.6.0",
+      "source": "pypi"
+    },
+    "fsspec": {
+      "version": "2025.3.2",
+      "source": "pypi"
+    },
+    "greenlet": {
+      "version": "3.2.2",
+      "source": "pypi"
+    },
+    "h11": {
+      "version": "0.16.0",
+      "source": "pypi"
+    },
+    "httpcore": {
+      "version": "1.0.9",
+      "source": "pypi"
+    },
+    "httpx": {
+      "version": "0.28.1",
+      "source": "pypi"
+    },
+    "huggingface-hub": {
+      "version": "0.23.1",
+      "source": "pypi"
+    },
+    "idna": {
+      "version": "3.10",
+      "source": "pypi"
+    },
+    "jinja2": {
+      "version": "3.1.6",
+      "source": "pypi"
+    },
+    "jiter": {
+      "version": "0.9.0",
+      "source": "pypi"
+    },
+    "joblib": {
+      "version": "1.5.0",
+      "source": "pypi"
+    },
+    "llama-cloud": {
+      "version": "0.1.21",
+      "source": "pypi"
+    },
+    "llama-index": {
+      "version": "0.10.59",
+      "source": "pypi"
+    },
+    "llama-index-agent-openai": {
+      "version": "0.2.9",
+      "source": "pypi"
+    },
+    "llama-index-cli": {
+      "version": "0.1.13",
+      "source": "pypi"
+    },
+    "llama-index-core": {
+      "version": "0.10.59",
+      "source": "pypi"
+    },
+    "llama-index-embeddings-huggingface": {
+      "version": "0.2.3",
+      "source": "pypi"
+    },
+    "llama-index-embeddings-openai": {
+      "version": "0.1.11",
+      "source": "pypi"
+    },
+    "llama-index-indices-managed-llama-cloud": {
+      "version": "0.2.7",
+      "source": "pypi"
+    },
+    "llama-index-legacy": {
+      "version": "0.9.48.post4",
+      "source": "pypi"
+    },
+    "llama-index-llms-huggingface": {
+      "version": "0.2.7",
+      "source": "pypi"
+    },
+    "llama-index-llms-openai": {
+      "version": "0.1.31",
+      "source": "pypi"
+    },
+    "llama-index-multi-modal-llms-openai": {
+      "version": "0.1.9",
+      "source": "pypi"
+    },
+    "llama-index-program-openai": {
+      "version": "0.1.7",
+      "source": "pypi"
+    },
+    "llama-index-question-gen-openai": {
+      "version": "0.1.3",
+      "source": "pypi"
+    },
+    "llama-index-readers-file": {
+      "version": "0.1.33",
+      "source": "pypi"
+    },
+    "llama-index-readers-llama-parse": {
+      "version": "0.1.6",
+      "source": "pypi"
+    },
+    "llama-parse": {
+      "version": "0.4.9",
+      "source": "pypi"
+    },
+    "lmstudio": {
+      "version": "1.3.0",
+      "source": "pypi"
+    },
+    "lxml": {
+      "version": "5.1.0",
+      "source": "pypi"
+    },
+    "markupsafe": {
+      "version": "3.0.2",
+      "source": "pypi"
+    },
+    "marshmallow": {
+      "version": "3.26.1",
+      "source": "pypi"
+    },
+    "minijinja": {
+      "version": "2.10.2",
+      "source": "pypi"
+    },
+    "mlx": {
+      "version": "0.25.2",
+      "source": "pypi"
+    },
+    "mpmath": {
+      "version": "1.3.0",
+      "source": "pypi"
+    },
+    "multidict": {
+      "version": "6.4.3",
+      "source": "pypi"
+    },
+    "mypy-extensions": {
+      "version": "1.1.0",
+      "source": "pypi"
+    },
+    "nest-asyncio": {
+      "version": "1.6.0",
+      "source": "pypi"
+    },
+    "networkx": {
+      "version": "3.4.2",
+      "source": "pypi"
+    },
+    "nltk": {
+      "version": "3.9.1",
+      "source": "pypi"
+    },
+    "numpy": {
+      "version": "1.26.4",
+      "source": "pypi"
+    },
+    "openai": {
+      "version": "1.78.1",
+      "source": "pypi"
+    },
+    "packaging": {
+      "version": "25.0",
+      "source": "pypi"
+    },
+    "pandas": {
+      "version": "2.2.3",
+      "source": "pypi"
+    },
+    "pillow": {
+      "version": "11.2.1",
+      "source": "pypi"
+    },
+    "propcache": {
+      "version": "0.3.1",
+      "source": "pypi"
+    },
+    "psutil": {
+      "version": "7.0.0",
+      "source": "pypi"
+    },
+    "pydantic": {
+      "version": "2.11.4",
+      "source": "pypi"
+    },
+    "pydantic-core": {
+      "version": "2.33.2",
+      "source": "pypi"
+    },
+    "pypdf": {
+      "version": "4.3.1",
+      "source": "pypi"
+    },
+    "python-dateutil": {
+      "version": "2.9.0.post0",
+      "source": "pypi"
+    },
+    "pytz": {
+      "version": "2025.2",
+      "source": "pypi"
+    },
+    "pyyaml": {
+      "version": "6.0.2",
+      "source": "pypi"
+    },
+    "regex": {
+      "version": "2024.11.6",
+      "source": "pypi"
+    },
+    "requests": {
+      "version": "2.32.3",
+      "source": "pypi"
+    },
+    "rich": {
+      "version": "13.7.0",
+      "source": "pypi"
+    },
+    "safetensors": {
+      "version": "0.5.3",
+      "source": "pypi"
+    },
+    "scikit-learn": {
+      "version": "1.6.1",
+      "source": "pypi"
+    },
+    "scipy": {
+      "version": "1.15.3",
+      "source": "pypi"
+    },
+    "sentence-transformers": {
+      "version": "2.6.1",
+      "source": "pypi"
+    },
+    "six": {
+      "version": "1.17.0",
+      "source": "pypi"
+    },
+    "sniffio": {
+      "version": "1.3.1",
+      "source": "pypi"
+    },
+    "soupsieve": {
+      "version": "2.7",
+      "source": "pypi"
+    },
+    "sqlalchemy": {
+      "version": "2.0.41",
+      "source": "pypi"
+    },
+    "striprtf": {
+      "version": "0.0.26",
+      "source": "pypi"
+    },
+    "sympy": {
+      "version": "1.14.0",
+      "source": "pypi"
+    },
+    "tenacity": {
+      "version": "8.5.0",
+      "source": "pypi"
+    },
+    "text-generation": {
+      "version": "0.7.0",
+      "source": "pypi"
+    },
+    "textual": {
+      "version": "0.53.1",
+      "source": "pypi"
+    },
+    "threadpoolctl": {
+      "version": "3.6.0",
+      "source": "pypi"
+    },
+    "tiktoken": {
+      "version": "0.9.0",
+      "source": "pypi"
+    },
+    "tokenizers": {
+      "version": "0.19.1",
+      "source": "pypi"
+    },
+    "torch": {
+      "version": "2.2.2",
+      "source": "pypi"
+    },
+    "tqdm": {
+      "version": "4.66.2",
+      "source": "pypi"
+    },
+    "transformers": {
+      "version": "4.40.1",
+      "source": "pypi"
+    },
+    "typing-extensions": {
+      "version": "4.13.2",
+      "source": "pypi"
+    },
+    "typing-inspect": {
+      "version": "0.9.0",
+      "source": "pypi"
+    },
+    "typing-inspection": {
+      "version": "0.4.0",
+      "source": "pypi"
+    },
+    "tzdata": {
+      "version": "2025.2",
+      "source": "pypi"
+    },
+    "urllib3": {
+      "version": "2.4.0",
+      "source": "pypi"
+    },
+    "wrapt": {
+      "version": "1.17.2",
+      "source": "pypi"
+    },
+    "yarl": {
+      "version": "1.20.0",
+      "source": "pypi"
+    }
+  }
+} 

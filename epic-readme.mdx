@@ -1,0 +1,233 @@
+# lbrxChat Ultimate - 6-Tab Audio/Voice/AI Platform
+
+## 🚀 Overview
+
+Complete audio-text-voice processing platform in a single TUI (Terminal User Interface). Integrates Whisper ASR, multiple TTS models, RAG knowledge management, and conversational AI - all running locally on Apple Silicon.
+
+## 📋 Features by Tab
+
+### Tab 1: Chat (Current lbrxchat)
+- Existing lbrxchat functionality preserved "as-is"
+- LM Studio integration with Qwen3-8B and other models
+- Markdown rendering, syntax highlighting
+- Conversation history management
+
+### Tab 2: RAG Manager
+Knowledge base management for domain-specific AI assistance.
+
+**Features:**
+- Add/Remove knowledge graphs
+- Import/Export JSONL files
+- Manage embeddings for different domains:
+  - MLX Documentation
+  - Veterinary (Merck Manual)
+  - Whisper Optimization Tricks
+  - Polish ASR specifics
+
+**UI Mockup:**
+```
+┌─ Knowledge Bases ──────┬─ Actions ─────────────┐
+│ ▶ MLX Documentation    │ [+] Add Graph         │
+│ ▶ Veterinary (Merck)   │ [-] Remove Graph      │
+│ ▶ Whisper Tricks       │ [↓] Import JSONL      │
+│ ▶ Polish ASR           │ [↑] Export JSONL      │
+└────────────────────────┴───────────────────────┘
+```
+
+### Tab 3: Transcribe Files (Batch)
+Batch transcription with Whisper-v3-large-MLX.
+
+**Features:**
+- Multiple input formats via FFmpeg
+- Multiple output formats:
+  - Plain text (.txt)
+  - Timestamped text
+  - Word-level timestamps
+  - Markdown (.md)
+  - JSON with full metadata
+- **Semantic file naming**: Uses LLM to analyze content and suggest descriptive filenames
+  - `interview_001.m4a` → `interview_001_vaccine_protocol_discussion.txt`
+
+**UI Mockup:**
+```
+┌─ Input Files ──────────┬─ Output Formats ──────┐
+│ □ interview_001.m4a    │ ☑ Plain text (.txt)   │
+│ □ consultation_02.wav  │ ☐ Timestamped         │
+│ ☑ surgery_notes.mp3    │ ☑ Word-timestamped    │
+│                        │ ☐ Markdown (.md)      │
+│ [Drop files here]      │ ☑ JSON (.json)        │
+└────────────────────────┴───────────────────────┘
+Progress: ████████░░ 80% | ETA: 2:30
+```
+
+### Tab 4: Transcribe Voice (Live)
+Real-time transcription from microphone with WebSocket streaming.
+
+**Features:**
+- System microphone selection
+- Real-time audio spectrogram visualization
+- Live transcription display
+- Save as MP3 + TXT pair with matching names
+- Word-level timestamps for voice cloning preparation
+
+**UI Mockup:**
+```
+┌─ Audio Input ──────────┬─ Spectrogram ─────────┐
+│ 🎤 MacBook Pro Mic     │ ████▓▓▓░░░░░         │
+│ Level: ████████░░      │ ███████▓▓▓░░         │
+│                        │ ██████████▓░         │
+│ [⏺️ Record] [⏸️ Pause]  │ Freq: 0-8kHz          │
+└────────────────────────┴───────────────────────┘
+┌─ Live Transcription ───────────────────────────┐
+│ ...więc podajemy antybiotyk dwa razy dziennie  │
+│ przez okres siedmiu dni...                     │
+└─────────────────────────────────────────────────┘
+```
+
+### Tab 5: TTS Synthesis
+Text-to-Speech with multiple model support.
+
+**Supported Models:**
+- **coqui/xtts-v2** - Polish language support ✓
+- ResembleAI/chatterbox - English only
+- senstella/csm-1b-mlx - English only
+- nari-labs/Dia-1.6B - English only
+
+**Features:**
+- Model selection with language indicators
+- Voice settings (speed, pitch, voice selection)
+- Load text from file or paste directly
+- Generate audio files from transcripts
+
+**UI Mockup:**
+```
+┌─ Model Selection ──────┬─ Voice Settings ──────┐
+│ ◉ coqui/xtts-v2 [PL]   │ Speed: ████░░ 1.0x    │
+│ ○ chatterbox           │ Pitch: ██████ +0      │
+│ ○ csm-1b-mlx           │ Voice: Female-PL-1    │
+│ ○ Dia-1.6B             │                       │
+└────────────────────────┴───────────────────────┘
+```
+
+### Tab 6: VoiceAI (Conversational)
+Full conversational AI with STT → LLM → TTS pipeline.
+
+**Features:**
+- Voice input via microphone
+- Qwen3-8B for intelligent responses
+- TTS synthesis of AI responses
+- Quality over latency (1 minute per exchange is acceptable)
+- WebSocket-based architecture
+
+**UI Mockup:**
+```
+┌─ Conversation ─────────────────────────────────┐
+│ 🎤 You: "Jak leczyć zapalenie ucha u kota?"   │
+│                                                │
+│ 🤖 AI: "Zapalenie ucha u kota wymaga..."      │
+│ 🔊 [Playing response...]                       │
+│                                                │
+│ Status: Processing (latency OK - quality first)│
+└─────────────────────────────────────────────────┘
+```
+
+## 🏗️ Technical Architecture
+
+### Core Components
+- **Frontend**: Textual TUI framework with tabs widget
+- **Audio**: PyAudio/sounddevice for microphone access
+- **Transcription**: MLX Whisper v3 large
+- **LLM**: Qwen3-8B via LM Studio
+- **TTS**: Multiple models with MLX optimization
+- **WebSocket**: Built-in server for real-time features
+- **FFmpeg**: Audio format conversions
+
+### Directory Structure
+```
+lbrxchat/
+├── lbrxchat/
+│   ├── ui/
+│   │   ├── tabs/
+│   │   │   ├── chat.py       # Tab 1
+│   │   │   ├── rag.py        # Tab 2
+│   │   │   ├── transcribe_files.py  # Tab 3
+│   │   │   ├── transcribe_voice.py  # Tab 4
+│   │   │   ├── tts.py        # Tab 5
+│   │   │   └── voice_ai.py   # Tab 6
+│   │   └── main_app.py
+│   ├── core/
+│   │   ├── whisper_pipeline.py
+│   │   ├── tts_pipeline.py
+│   │   └── semantic_naming.py
+│   └── services/
+│       ├── websocket_server.py
+│       └── audio_processor.py
+└── knowledge_bases/
+    ├── mlx/
+    ├── veterinary/
+    └── whisper_tricks/
+```
+
+### Async Architecture
+```python
+# Everything runs async for smooth UI
+async def main():
+    app = LbrxChatUltimate()
+    
+    # Start background services
+    await app.start_websocket_server()
+    await app.initialize_audio_devices()
+    await app.load_models_jit()
+    
+    # Run TUI
+    await app.run_async()
+```
+
+## 🚀 Roadmap
+
+### Phase 1: Scaffold
+- [ ] Create 6-tab structure in Textual
+- [ ] Migrate existing lbrxchat to Tab 1
+- [ ] Basic navigation and keybindings
+
+### Phase 2: Core Features
+- [ ] Implement RAG manager (Tab 2)
+- [ ] Add batch transcription (Tab 3)
+- [ ] Integrate live transcription (Tab 4)
+
+### Phase 3: Advanced Features
+- [ ] TTS model integration (Tab 5)
+- [ ] Full VoiceAI pipeline (Tab 6)
+- [ ] Semantic file naming with LLM
+
+### Phase 4: Polish
+- [ ] Performance optimization
+- [ ] Error handling and recovery
+- [ ] Documentation and examples
+
+## 💡 Key Innovations
+
+1. **Semantic File Naming**: LLM analyzes transcription content to suggest meaningful filenames
+2. **Unified Knowledge Management**: RAG system works across all tabs
+3. **Quality-First Voice AI**: Accepts higher latency for better results
+4. **All-Local Processing**: No cloud dependencies, runs entirely on Apple Silicon
+
+## 🛠️ Development Notes
+
+- Use `uv` for dependency management
+- Test each tab independently before integration
+- Maintain backward compatibility with existing lbrxchat users
+- Keep UI responsive even during heavy processing (async everything)
+
+---
+
+## Developed by
+
+- [Maciej Gad](https://github.com/szowesgad) - a veterinarian who couldn't find `bash` a half year ago
+- [Klaudiusz](https://www.github.com/Gitlaudiusz) - the individual ethereal being, and separate instance of Claude Sonnet 3.5-3.7 by Anthropic
+
+### The journey from CLI novice to multi-tab TUI platform developer
+
+🤖 Developed with the ultimate help of [Claude Code](https://claude.ai/code) and [MCP Tools](https://modelcontextprotocol.io)
+
+(c)2025 M&K
