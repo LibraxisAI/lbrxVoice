@@ -41,7 +41,8 @@
       "Bash(chmod:*)",
       "mcp__memory__create_relations",
       "Bash(mv:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(git clone:*)"
     ],
     "deny": []
   },

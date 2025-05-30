@@ -76,7 +76,8 @@ class WhisperConfig:
     # Wielkość beam search - ile ścieżek rozważa jednocześnie
     # Wyższa = lepsza jakość ale wolniej
     # Zakres: 1-10, domyślnie 5 (używane gdy temperature=0.0)
-    beam_size: Optional[int] = 5
+    # UWAGA: MLX Whisper nie obsługuje beam search - użyj None
+    beam_size: Optional[int] = None
     
     # Liczba niezależnych prób - ile razy próbować transkrypcji
     # Wyższa = większa szansa na dobry wynik
@@ -86,7 +87,8 @@ class WhisperConfig:
     # Cierpliwość w beam search - jak długo czekać na poprawę
     # Wyższa = dłużej szuka optymalnego wyniku
     # Zakres: 0.0-2.0, domyślnie 1.0
-    patience: Optional[float] = 1.0
+    # UWAGA: Wymaga beam_size, MLX nie obsługuje
+    patience: Optional[float] = None
     
     # Kara za długość - kontroluje długość generowanych segmentów
     # <1.0 = preferuje krótsze, >1.0 = preferuje dłuższe
@@ -165,7 +167,7 @@ class WhisperConfig:
             compression_ratio_threshold=2.4,
             initial_prompt="Transkrypcja rozmowy po polsku.",
             word_timestamps=True,
-            beam_size=5,
+            beam_size=None,  # MLX nie obsługuje beam search
             best_of=5
         )
     
@@ -178,9 +180,8 @@ class WhisperConfig:
             condition_on_previous_text=False,
             compression_ratio_threshold=2.8,  # Bardziej restrykcyjne
             temperature=(0.0, 0.2),  # Fallback dla trudnych fragmentów
-            beam_size=8,  # Większy beam
+            beam_size=None,  # MLX nie obsługuje beam search
             best_of=8,
-            patience=1.5,
             word_timestamps=True,
             initial_prompt="Dokładna transkrypcja rozmowy po polsku."
         )
@@ -192,7 +193,7 @@ class WhisperConfig:
             model_name="mlx-community/whisper-medium-mlx",
             language="pl",
             condition_on_previous_text=False,
-            beam_size=3,  # Mniejszy beam
+            beam_size=None,  # MLX nie obsługuje beam search
             best_of=3,
             word_timestamps=False,  # Bez timestampów słów
             fp16=True
@@ -227,7 +228,8 @@ class WhisperConfig:
     
     def to_transcribe_kwargs(self) -> Dict:
         """Konwertuje konfigurację na argumenty dla mlx_whisper.transcribe()"""
-        return {
+        # Podstawowe argumenty
+        kwargs = {
             'language': self.language,
             'task': self.task,
             'temperature': self.temperature,
@@ -242,17 +244,22 @@ class WhisperConfig:
             'clip_timestamps': self.clip_timestamps,
             'hallucination_silence_threshold': self.hallucination_silence_threshold,
             'verbose': self.verbose,
-            'decode_options': {
-                'language': self.language,
-                'task': self.task,
-                'beam_size': self.beam_size,
-                'best_of': self.best_of,
-                'patience': self.patience,
-                'length_penalty': self.length_penalty,
-                'sample_len': self.sample_len,
-                'fp16': self.fp16
-            }
         }
+        
+        # Dodaj decode options bezpośrednio (nie jako zagnieżdżony dict)
+        if self.beam_size is not None:
+            kwargs['beam_size'] = self.beam_size
+        if self.best_of is not None:
+            kwargs['best_of'] = self.best_of
+        if self.patience is not None:
+            kwargs['patience'] = self.patience
+        if self.length_penalty is not None:
+            kwargs['length_penalty'] = self.length_penalty
+        if self.sample_len is not None:
+            kwargs['sample_len'] = self.sample_len
+        kwargs['fp16'] = self.fp16
+        
+        return kwargs
 
 
 # =============================================================================
