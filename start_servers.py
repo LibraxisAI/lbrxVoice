@@ -20,12 +20,18 @@ def signal_handler(sig, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
-def start_server(name, command, port):
+def start_server(name, command, port, extra_env=None):
     """Start a server in background"""
     print(f"Starting {name} on port {port}...")
     
     env = os.environ.copy()
     env['PYTHONUNBUFFERED'] = '1'
+    if extra_env:
+        env.update(extra_env)
+    
+    # Prepend uv run to command
+    if not command.startswith("uv run"):
+        command = f"uv run {command}"
     
     log_file = open(f"logs/{name}.log", "w")
     process = subprocess.Popen(
@@ -55,17 +61,17 @@ def main():
     start_server("whisper-batch", "python -m whisper_servers batch", 8123)
     time.sleep(3)
     
-    start_server("whisper-realtime", f"REALTIME_PORT=8126 python -m whisper_servers realtime", 8126)
+    start_server("whisper-realtime", "python -m whisper_servers realtime", 8126, {"REALTIME_PORT": "8126"})
     time.sleep(3)
     
-    # Start TTS servers
-    start_server("dia-ws", f"DIA_WS_PORT=8129 python -m tts_servers dia-ws", 8129)
-    time.sleep(3)
+    # Start TTS servers (commented out for now - need to fix first)
+    # start_server("dia-ws", f"DIA_WS_PORT=8129 python -m tts_servers dia-ws", 8129)
+    # time.sleep(3)
     
-    start_server("dia-rest", f"DIA_REST_PORT=8132 python -m tts_servers dia-rest", 8132)
-    time.sleep(3)
+    # start_server("dia-rest", f"DIA_REST_PORT=8132 python -m tts_servers dia-rest", 8132)
+    # time.sleep(3)
     
-    start_server("csm-rest", f"CSM_REST_PORT=8135 python -m tts_servers csm-rest", 8135)
+    # start_server("csm-rest", f"CSM_REST_PORT=8135 python -m tts_servers csm-rest", 8135)
     time.sleep(5)
     
     print("\n✅ Servers started:")

@@ -17,8 +17,8 @@ class ServerSettings(BaseSettings):
     
     # Model settings
     MODELS_DIR: Path = Field(default=Path("models"))
-    BATCH_MODEL: str = Field(default="large-v3")
-    REALTIME_MODEL: str = Field(default="tiny")
+    BATCH_MODEL: str = Field(default="whisper-large-v3-mlx")
+    REALTIME_MODEL: str = Field(default="whisper-medium-mlx")
     
     # Audio settings
     MAX_AUDIO_SIZE_MB: int = Field(default=100)

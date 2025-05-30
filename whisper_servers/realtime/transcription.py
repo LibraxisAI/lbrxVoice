@@ -68,14 +68,28 @@ class RealtimeTranscriptionService:
             audio_array = np.frombuffer(audio_data, np.int16).astype(np.float32) / 32768.0
             
             # Transcribe the audio chunk
-            result = await asyncio.to_thread(
-                mlx_whisper.transcribe,
-                audio_array,
-                model=self._model,
-                path_or_hf_repo=None,  # Use already loaded model
-                language=None,  # Auto-detect language
-                word_timestamps=True,  # Include word-level timestamps
-            )
+            # First we need to convert audio to proper format
+            # MLX Whisper expects a file path or audio data in specific format
+            import tempfile
+            import soundfile as sf
+            
+            # Save audio to temporary file
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp_file:
+                sf.write(tmp_file.name, audio_array, self._sample_rate)
+                temp_path = tmp_file.name
+            
+            try:
+                result = await asyncio.to_thread(
+                    mlx_whisper.transcribe,
+                    temp_path,
+                    path_or_hf_repo=str(self._model_path) if self._model_path.exists() else f"mlx-community/whisper-{settings.REALTIME_MODEL}",
+                    language=None,  # Auto-detect language
+                    word_timestamps=True,  # Include word-level timestamps
+                )
+            finally:
+                # Clean up temp file
+                import os
+                os.unlink(temp_path)
             
             return result
         except Exception as e:
@@ -119,57 +133,76 @@ class RealtimeTranscriptionService:
             result = await self.process_audio_chunk(audio_chunk)
             yield result
     
-    async def transcribe_websocket(self, websocket: websockets.WebSocketServerProtocol) -> None:
+    async def transcribe_websocket(self, websocket) -> None:
         """
         Handle WebSocket connection for real-time transcription.
         
         Args:
-            websocket: WebSocket connection
+            websocket: WebSocket connection (FastAPI WebSocket)
         """
         # Ensure model is loaded
         await self.load_model()
         
         try:
-            async for message in websocket:
+            while True:
+                data = await websocket.receive()
+                
+                # FastAPI WebSocket returns a dict with 'type' and data
+                if data.get("type") == "websocket.disconnect":
+                    break
+                    
+                # Get the actual message
+                message = data.get("text") or data.get("bytes")
+                
                 # Parse the incoming message
                 if isinstance(message, str):
                     try:
                         import json
-                        data = json.loads(message)
-                        audio_base64 = data.get("audio")
-                        if audio_base64:
-                            # Process the audio data
-                            result = await self.process_base64_audio(audio_base64)
+                        parsed_data = json.loads(message)
+                        
+                        # Check if it's base64 audio data
+                        audio_data = parsed_data.get("data") or parsed_data.get("audio")
+                        audio_format = parsed_data.get("format", "pcm")  # default to PCM for realtime
+                        
+                        if audio_data:
+                            if audio_format == "pcm":
+                                # For realtime PCM audio from microphone
+                                audio_bytes = base64.b64decode(audio_data)
+                                result = await self.process_audio_chunk(audio_bytes)
+                            else:
+                                # For file formats (m4a, mp3, etc) - only for testing
+                                result = await self.process_base64_audio(audio_data)
                             
                             # Send the result back
-                            await websocket.send(json.dumps({
+                            await websocket.send_json({
                                 "text": result.get("text", ""),
                                 "language": result.get("language", ""),
                                 "segments": result.get("segments", []),
                                 "words": result.get("words", []),
-                            }))
+                            })
                     except json.JSONDecodeError:
                         logger.error("Invalid JSON message")
-                        await websocket.send(json.dumps({"error": "Invalid JSON message"}))
+                        await websocket.send_json({"error": "Invalid JSON message"})
                 elif isinstance(message, bytes):
                     # Process the raw audio data
                     result = await self.process_audio_chunk(message)
                     
                     # Send the result back
-                    await websocket.send(json.dumps({
+                    await websocket.send_json({
                         "text": result.get("text", ""),
                         "language": result.get("language", ""),
                         "segments": result.get("segments", []),
                         "words": result.get("words", []),
-                    }))
-        except websockets.exceptions.ConnectionClosed:
-            logger.info("WebSocket connection closed")
+                    })
         except Exception as e:
-            logger.error(f"Error handling WebSocket connection: {e}")
-            try:
-                await websocket.send(json.dumps({"error": str(e)}))
-            except:
-                pass
+            if "WebSocketDisconnect" in str(type(e)):
+                logger.info("WebSocket connection closed")
+            else:
+                logger.error(f"Error handling WebSocket connection: {e}")
+                try:
+                    await websocket.send_json({"error": str(e)})
+                except:
+                    pass
 
 
 # Create a global instance of the real-time transcription service

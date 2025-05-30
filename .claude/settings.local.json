@@ -24,8 +24,24 @@
       "Bash(curl:*)",
       "Bash(cat:*)",
       "Bash(CSM_REST_PORT=8135 python -m tts_servers csm-rest)",
-      "mcp__memory__create_entities"
+      "mcp__memory__create_entities",
+      "Bash(uv pip list:*)",
+      "Bash(uv run:*)",
+      "mcp__sequential-thinking__sequentialthinking",
+      "Bash(uv python pin:*)",
+      "Bash(uv init:*)",
+      "Bash(pkill:*)",
+      "mcp__memory__open_nodes",
+      "Bash(pip show:*)",
+      "Bash(uv pip show:*)",
+      "Bash(ffprobe:*)",
+      "Bash(ffmpeg:*)",
+      "Bash(grep:*)",
+      "Bash(true)",
+      "Bash(chmod:*)",
+      "mcp__memory__create_relations"
     ],
     "deny": []
-  }
+  },
+  "enableAllProjectMcpServers": false
 }

@@ -110,24 +110,24 @@ class DiaMLXModel(nn.Module):
         
         # Embeddings
         self.text_embeddings = nn.Embedding(config.vocab_size, config.hidden_size)
-        self.audio_embeddings = nn.ModuleList([
+        self.audio_embeddings = [
             nn.Embedding(config.audio_vocab_size, config.hidden_size)
             for _ in range(config.num_audio_codebooks)
-        ])
+        ]
         self.position_embeddings = nn.Embedding(config.max_position_embeddings, config.hidden_size)
         
         # Transformer blocks
-        self.blocks = nn.ModuleList([
+        self.blocks = [
             DiaMLXBlock(config) for _ in range(config.num_hidden_layers)
-        ])
+        ]
         
         # Output heads
         self.ln_f = nn.LayerNorm(config.hidden_size)
         self.text_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
-        self.audio_heads = nn.ModuleList([
+        self.audio_heads = [
             nn.Linear(config.hidden_size, config.audio_vocab_size, bias=False)
             for _ in range(config.num_audio_codebooks)
-        ])
+        ]
         
     def embed_text(self, text_ids: mx.array) -> mx.array:
         """Embed text tokens"""
@@ -214,7 +214,7 @@ class DiaMLX:
         # Load weights
         weights_path = self.model_path / "weights.npz"
         weights = mx.load(str(weights_path))
-        self.model.load_weights(weights)
+        self.model.update(weights)
         
         print("Model loaded successfully")
         

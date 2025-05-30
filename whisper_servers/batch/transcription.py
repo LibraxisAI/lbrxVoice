@@ -56,8 +56,13 @@ class TranscriptionService:
             # Check if model exists, otherwise try to download it from the Hugging Face Hub
             model_path_or_repo = str(self._model_path)
             if not self._model_path.exists():
-                logger.info(f"Model not found locally, attempting to load from 'mlx-community/whisper-{settings.BATCH_MODEL}'")
-                model_path_or_repo = f"mlx-community/whisper-{settings.BATCH_MODEL}"
+                # Check if model name already contains "whisper-" prefix
+                if settings.BATCH_MODEL.startswith("whisper-"):
+                    model_repo = f"mlx-community/{settings.BATCH_MODEL}"
+                else:
+                    model_repo = f"mlx-community/whisper-{settings.BATCH_MODEL}"
+                logger.info(f"Model not found locally, attempting to load from '{model_repo}'")
+                model_path_or_repo = model_repo
             
             # Load model (use to_thread because model loading is CPU-bound)
             self._model = await asyncio.to_thread(mlx_whisper.load_model, model_path_or_repo)
@@ -135,14 +140,13 @@ class TranscriptionService:
                 )
                 
                 # Transcribe the audio file
+                # Don't pass path_or_hf_repo when we already have a loaded model
                 result = await asyncio.to_thread(
                     mlx_whisper.transcribe,
                     str(wav_file),
-                    path_or_hf_repo=None,  # Use already loaded model
-                    model=self._model,  # Pass the loaded model
                     word_timestamps=job.word_timestamps,
                     language=job.language,
-                    prompt=job.prompt,
+                    initial_prompt=job.prompt,
                     temperature=job.temperature,
                 )
                 
@@ -152,12 +156,11 @@ class TranscriptionService:
                 job.completed_at = time.time()
                 
                 # Save result to file
-                async with asyncio.to_thread(
-                    open, job.output_file, "w"
-                ) as f:
-                    await asyncio.to_thread(
-                        json.dump, result, f, indent=2
-                    )
+                def save_result():
+                    with open(job.output_file, "w") as f:
+                        json.dump(result, f, indent=2)
+                
+                await asyncio.to_thread(save_result)
                 
                 logger.info(f"Job {job.job_id} completed successfully")
             
