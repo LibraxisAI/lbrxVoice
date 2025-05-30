@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Dict, Any, Optional, List
 from dataclasses import asdict
 
-from whisper_config import WhisperConfig
+from tools.whisper_config import WhisperConfig
 
 
 class SimpleWhisperConfigTUI:

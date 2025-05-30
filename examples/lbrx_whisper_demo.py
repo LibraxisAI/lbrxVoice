@@ -14,11 +14,13 @@ Data: 2025-05-30
 """
 
 import sys
+import os
 import subprocess
 from pathlib import Path
 from typing import Optional
 import mlx_whisper
-from whisper_config import WhisperConfig
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from tools.whisper_config import WhisperConfig
 
 
 def print_header():
@@ -65,9 +67,9 @@ def demo_basic_transcription():
     print("─" * 50)
     
     # Sprawdź czy są pliki testowe
-    test_files = list(Path("uploads").glob("*.m4a")) + \
-                 list(Path("uploads").glob("*.mp3")) + \
-                 list(Path("uploads").glob("*.wav"))
+    test_files = list(Path("../uploads").glob("*.m4a")) + \
+                 list(Path("../uploads").glob("*.mp3")) + \
+                 list(Path("../uploads").glob("*.wav"))
     
     if not test_files:
         print("❌ Brak plików audio w katalogu uploads/")
@@ -189,11 +191,11 @@ def interactive_menu():
             demo_server_endpoints()
         elif choice == '5':
             print("\n🚀 Uruchamiam konfigurator TUI...")
-            subprocess.run([sys.executable, "whisper_config_tui.py"])
+            subprocess.run([sys.executable, "../tools/whisper_config_tui.py"])
         elif choice == '6':
             print("\n🚀 Uruchamiam serwery...")
             print("Użyj Ctrl+C aby zatrzymać")
-            subprocess.run([sys.executable, "start_servers.py"])
+            subprocess.run([sys.executable, "../start_servers.py"])
         elif choice == '7':
             input_dir = input("\nKatalog wejściowy [uploads]: ").strip() or "uploads"
             output_dir = input("Katalog wyjściowy [outputs/txt]: ").strip() or "outputs/txt"
@@ -201,7 +203,7 @@ def interactive_menu():
             print(f"\n🔄 Transkrybuję pliki z {input_dir} do {output_dir}...")
             subprocess.run([
                 sys.executable, 
-                "batch_transcribe_all.py",
+                "../scripts/batch_transcribe_all.py",
                 "--input-dir", input_dir,
                 "--output-dir", output_dir,
                 "--language", "pl"

@@ -28,7 +28,7 @@ from rich.align import Align
 from rich.button import Button
 from rich.syntax import Syntax
 
-from whisper_config import WhisperConfig
+from tools.whisper_config import WhisperConfig
 
 
 class ConfigParameter:
@@ -615,7 +615,7 @@ compression_ratio_threshold=2.8  # dla problemów""",
     def export_code(self):
         """Eksportuj kod Python z aktualną konfiguracją"""
         code = """import mlx_whisper
-from whisper_config import WhisperConfig
+from tools.whisper_config import WhisperConfig
 
 # Konfiguracja wygenerowana przez TUI
 config = WhisperConfig(
