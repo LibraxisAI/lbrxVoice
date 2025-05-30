@@ -108,11 +108,11 @@ class WhisperConfig:
     
     # Znaki interpunkcyjne do łączenia z następnym słowem
     # Używane gdy word_timestamps=True
-    prepend_punctuations: str = "\"'"¿([{-„"
+    prepend_punctuations: str = "\"'\"¿([{-„"
     
     # Znaki interpunkcyjne do łączenia z poprzednim słowem
     # Używane gdy word_timestamps=True
-    append_punctuations: str = "\"'.。,，!！?？:：")]}、""
+    append_punctuations: str = "\"'.。,，!！?？:：\")]}、\""
     
     # Próg ciszy dla detekcji halucynacji (w sekundach)
     # Używane gdy word_timestamps=True
