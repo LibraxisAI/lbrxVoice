@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright © 2023-2024 Apple Inc.
 import argparse
 import os

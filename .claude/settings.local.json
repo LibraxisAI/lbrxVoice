@@ -39,7 +39,9 @@
       "Bash(grep:*)",
       "Bash(true)",
       "Bash(chmod:*)",
-      "mcp__memory__create_relations"
+      "mcp__memory__create_relations",
+      "Bash(mv:*)",
+      "Bash(tree:*)"
     ],
     "deny": []
   },
