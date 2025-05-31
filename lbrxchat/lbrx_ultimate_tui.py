@@ -190,6 +190,20 @@ class LbrxUltimateTUI(App):
     def action_switch_tab(self, tab_name: str) -> None:
         """Switch to specified tab"""
         self.query_one(TabbedContent).active = tab_name
+    
+    def on_mount(self) -> None:
+        """Called when app starts"""
+        pass
+    
+    def on_unmount(self) -> None:
+        """Called when app exits - clean up mouse tracking"""
+        # Disable mouse tracking to prevent terminal pollution
+        try:
+            import sys
+            sys.stdout.write('\x1b[?1000l\x1b[?1003l\x1b[?1015l\x1b[?1006l')
+            sys.stdout.flush()
+        except:
+            pass
 
 
 class ChatTab(Container):
@@ -377,10 +391,35 @@ class RAGTab(Container):
 
 
 
+def cleanup_terminal():
+    """Clean up terminal state on exit"""
+    try:
+        import sys
+        # Disable mouse tracking
+        sys.stdout.write('\x1b[?1000l\x1b[?1003l\x1b[?1015l\x1b[?1006l')
+        # Reset cursor and clear any partial sequences
+        sys.stdout.write('\x1b[?25h\x1b[0m')
+        sys.stdout.flush()
+    except:
+        pass
+
 def main():
     """Run the application"""
-    app = LbrxUltimateTUI()
-    app.run()
+    import signal
+    import atexit
+    
+    # Register cleanup handlers
+    atexit.register(cleanup_terminal)
+    signal.signal(signal.SIGINT, lambda s, f: cleanup_terminal())
+    signal.signal(signal.SIGTERM, lambda s, f: cleanup_terminal())
+    
+    try:
+        app = LbrxUltimateTUI()
+        app.run()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        cleanup_terminal()
 
 
 if __name__ == "__main__":
