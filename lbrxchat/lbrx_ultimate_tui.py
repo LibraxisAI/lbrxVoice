@@ -192,17 +192,47 @@ class ChatTab(Container):
                         ],
                         "temperature": 0.7,
                         "max_tokens": 500,
-                        "stream": False
+                        "stream": True
                     }
                 )
                 
                 if response.status_code == 200:
-                    result = response.json()
-                    ai_message = result['choices'][0]['message']['content']
-                    # Clear thinking message and show response
+                    # Clear thinking message and show input
                     log.clear()
                     log.write(f"[blue]You:[/blue] {message}")
-                    log.write(f"[yellow]AI:[/yellow] {ai_message}")
+                    
+                    # Stream response
+                    ai_message = ""
+                    log.write(f"[yellow]AI:[/yellow] ", end="")
+                    
+                    async for line in response.aiter_lines():
+                        if line.startswith("data: "):
+                            data = line[6:]  # Remove "data: " prefix
+                            if data == "[DONE]":
+                                break
+                            
+                            try:
+                                import json
+                                chunk = json.loads(data)
+                                if 'choices' in chunk and len(chunk['choices']) > 0:
+                                    delta = chunk['choices'][0].get('delta', {})
+                                    content = delta.get('content', '')
+                                    if content:
+                                        ai_message += content
+                                        # Update the log with streaming text
+                                        log.clear()
+                                        log.write(f"[blue]You:[/blue] {message}")
+                                        log.write(f"[yellow]AI:[/yellow] {ai_message}")
+                            except:
+                                continue
+                    
+                    # Add final touch for Polish projects
+                    if ai_message and not ai_message.endswith("No i zajebiście!"):
+                        ai_message += "\n\nNo i zajebiście!"
+                        log.clear()
+                        log.write(f"[blue]You:[/blue] {message}")
+                        log.write(f"[yellow]AI:[/yellow] {ai_message}")
+                        
                 else:
                     log.write(f"[red]Error:[/red] LM Studio returned {response.status_code}")
                     

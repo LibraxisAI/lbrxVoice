@@ -64,7 +64,11 @@ def main():
     start_server("whisper-realtime", "python -m whisper_servers realtime", 8126, {"REALTIME_PORT": "8126"})
     time.sleep(3)
     
-    # Start TTS servers (commented out for now - need to fix first)
+    # Start XTTS server
+    start_server("xtts-rest", "python tts_servers/xtts_rest_api.py", 8127)
+    time.sleep(3)
+    
+    # Other TTS servers (commented out for now - need to fix first)
     # start_server("dia-ws", f"DIA_WS_PORT=8129 python -m tts_servers dia-ws", 8129)
     # time.sleep(3)
     
@@ -72,14 +76,14 @@ def main():
     # time.sleep(3)
     
     # start_server("csm-rest", f"CSM_REST_PORT=8135 python -m tts_servers csm-rest", 8135)
-    time.sleep(5)
     
     print("\n✅ Servers started:")
     print("  - Whisper Batch: http://localhost:8123")
     print("  - Whisper Realtime: ws://localhost:8126")
-    print("  - DIA WebSocket: ws://localhost:8129")
-    print("  - DIA REST: http://localhost:8132")
-    print("  - CSM REST: http://localhost:8135")
+    print("  - XTTS REST: http://localhost:8127")
+    # print("  - DIA WebSocket: ws://localhost:8129")
+    # print("  - DIA REST: http://localhost:8132")
+    # print("  - CSM REST: http://localhost:8135")
     
     print("\n📊 Logs available in ./logs/")
     print("\nPress Ctrl+C to stop all servers")

@@ -21,8 +21,7 @@ def check_servers():
     servers = {
         "Whisper Batch": "http://localhost:8123/health",
         "Whisper Realtime": "http://localhost:8126/health",
-        "TTS DIA": "http://localhost:8124/health",
-        "TTS CSM": "http://localhost:8125/health",
+        "XTTS REST": "http://localhost:8127/health",
         "LM Studio": "http://localhost:1234/v1/models"
     }
     
