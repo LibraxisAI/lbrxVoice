@@ -23,6 +23,11 @@ from textual.timer import Timer
 from rich.panel import Panel
 from rich.text import Text
 
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from lbrxchat.widgets.audio_spectrogram import AudioSpectrogram
+
 
 class TranscribeVoiceTab(Container):
     """Live voice transcription with WebSocket streaming"""
@@ -65,10 +70,10 @@ class TranscribeVoiceTab(Container):
                 )
                 
                 yield Static("\nSpectrogram:")
-                yield Sparkline(
-                    data=[0] * 50,
-                    id="audio-sparkline",
-                    summary_function=max
+                yield AudioSpectrogram(
+                    id="voice-spectrogram",
+                    width=50,
+                    height=8
                 )
                 
                 with Horizontal(classes="record-controls"):
@@ -201,6 +206,10 @@ class TranscribeVoiceTab(Container):
             # Start audio level monitoring
             self.level_timer = self.set_interval(0.1, self.update_audio_level)
             
+            # Mark spectrogram as active
+            spectrogram = self.query_one("#voice-spectrogram", AudioSpectrogram)
+            spectrogram.start_recording()
+            
             # Enable save button
             self.query_one("#save-session").disabled = False
             
@@ -229,6 +238,10 @@ class TranscribeVoiceTab(Container):
             # Stop level monitoring
             if self.level_timer:
                 self.level_timer.stop()
+            
+            # Stop spectrogram
+            spectrogram = self.query_one("#voice-spectrogram", AudioSpectrogram)
+            spectrogram.stop_recording()
             
             # Update UI
             self.is_recording = False
@@ -318,11 +331,14 @@ class TranscribeVoiceTab(Container):
             level_bar = self.query_one("#audio-level", ProgressBar)
             level_bar.progress = level
             
-            # Update sparkline with frequency data
-            sparkline = self.query_one("#audio-sparkline", Sparkline)
-            # Simple frequency visualization (not real FFT)
-            data = list(sparkline.data[1:]) + [level]
-            sparkline.data = data
+            # Update spectrogram
+            spectrogram = self.query_one("#voice-spectrogram", AudioSpectrogram)
+            if self.is_recording:
+                # Update with actual audio data
+                spectrogram.update_spectrum(self.audio_buffer.flatten(), self.sample_rate)
+            else:
+                # Just update level for visual feedback
+                spectrogram.update_level(rms)
     
     async def save_session(self) -> None:
         """Save recording session to file"""
