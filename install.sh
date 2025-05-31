@@ -39,10 +39,24 @@ cd "$HOME/lbrxVoice" && uv run python run_ultimate_tui.py "$@"
 EOF
 chmod +x "$HOME/.local/bin/lbrxvoice"
 
+# Add to PATH if needed
+if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+    echo "📝 Adding ~/.local/bin to PATH..."
+    echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.zshrc"
+    export PATH="$HOME/.local/bin:$PATH"
+fi
+
 echo ""
 echo "✅ Installation complete!"
 echo ""
-echo "Run with: lbrxvoice"
-echo "(You may need to restart terminal or add ~/.local/bin to PATH)"
+echo "To run lbrxVoice:"
+echo "  lbrxvoice"
+echo ""
+echo "Or if command not found:"
+echo "  source ~/.zshrc"
+echo "  lbrxvoice"
+echo ""
+echo "Alternative:"
+echo "  ~/.local/bin/lbrxvoice"
 echo ""
 echo "No i zajebiście! 🚀"
