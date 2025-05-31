@@ -70,29 +70,53 @@ try:
 except Exception as e:
     print(f"❌ XTTS MLX: {e}")
 
-# Test 6: Test simple chat with LM Studio
-print("\n6️⃣ Testing LM Studio chat...")
+# Test 6: Test fancy chat with LM Studio about the project
+print("\n6️⃣ Testing LM Studio chat with streaming...")
 try:
-    test_prompt = {
+    fancy_prompt = {
         "model": "qwen3-8b",
         "messages": [
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": "Say 'Hello test' and nothing else."}
+            {"role": "system", "content": "Odpowiadaj po polsku. Bądź entuzjastyczny o projektach AI."},
+            {"role": "user", "content": "Opowiedz o projekcie lbrxWhisper - to nowoczesny voice AI z 6 zakładkami, Whisper ASR, LM Studio i XTTS TTS na Apple Silicon MLX. Skończ frazą 'No i zajebiście!'"}
         ],
-        "temperature": 0.1,
-        "max_tokens": 10
+        "temperature": 0.7,
+        "stream": True
     }
     
     resp = client.post(
         "http://localhost:1234/v1/chat/completions",
-        json=test_prompt,
-        timeout=10.0
+        json=fancy_prompt,
+        timeout=60.0
     )
     
     if resp.status_code == 200:
-        result = resp.json()
-        content = result['choices'][0]['message']['content']
-        print(f"✅ LM Studio chat: '{content}'")
+        print("✅ LM Studio streaming chat:")
+        print("-" * 60)
+        
+        full_response = ""
+        for line in resp.iter_lines():
+            if line:
+                line_str = line.decode('utf-8') if isinstance(line, bytes) else line
+                if line_str.startswith("data: "):
+                    data = line_str[6:]  # Remove "data: " prefix
+                    if data == "[DONE]":
+                        break
+                    
+                    try:
+                        import json
+                        chunk = json.loads(data)
+                        if 'choices' in chunk and len(chunk['choices']) > 0:
+                            delta = chunk['choices'][0].get('delta', {})
+                            content = delta.get('content', '')
+                            if content:
+                                print(content, end='', flush=True)
+                                full_response += content
+                    except:
+                        continue
+        
+        print("\n" + "-" * 60)
+        print("✅ Streaming complete!")
+        
     else:
         print(f"❌ LM Studio chat: {resp.status_code}")
 except Exception as e:
