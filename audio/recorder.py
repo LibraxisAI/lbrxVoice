@@ -132,6 +132,7 @@ class VADRecorder(AudioRecorder):
         self.min_speech_duration = 0.5  # seconds
         
         self.is_speaking = False
+        self.on_speech_end = None  # Initialize callback
         self.silence_start = None
         self.speech_chunks = []
         
@@ -203,7 +204,7 @@ try:
             self.vad = webrtcvad.Vad(mode)  # 0-3, 3 is most aggressive
             self.sample_rate = sample_rate
             self.frame_duration = 30  # ms
-            self.frame_size = int(sample_rate * frame_duration / 1000)
+            self.frame_size = int(sample_rate * self.frame_duration / 1000)
             
         def is_speech(self, audio_chunk: np.ndarray) -> bool:
             """Check if audio chunk contains speech"""
