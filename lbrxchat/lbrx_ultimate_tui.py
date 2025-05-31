@@ -161,15 +161,53 @@ class ChatTab(Container):
     
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "chat-send":
-            input_widget = self.query_one("#chat-input", Input)
-            message = input_widget.value
-            if message:
-                log = self.query_one("#chat-log", RichLog)
-                log.write(f"[blue]You:[/blue] {message}")
-                input_widget.value = ""
+            await self.send_message()
+    
+    async def on_input_submitted(self, event: Input.Submitted) -> None:
+        if event.input.id == "chat-input":
+            await self.send_message()
+    
+    async def send_message(self) -> None:
+        input_widget = self.query_one("#chat-input", Input)
+        message = input_widget.value
+        if not message:
+            return
+            
+        log = self.query_one("#chat-log", RichLog)
+        log.write(f"[blue]You:[/blue] {message}")
+        input_widget.value = ""
+        
+        # Call LM Studio
+        try:
+            log.write("[yellow]AI:[/yellow] [dim]Thinking...[/dim]")
+            
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    "http://localhost:1234/v1/chat/completions",
+                    json={
+                        "model": "qwen3-8b-mlx",
+                        "messages": [
+                            {"role": "system", "content": "You are a helpful AI assistant. Be concise."},
+                            {"role": "user", "content": message}
+                        ],
+                        "temperature": 0.7,
+                        "max_tokens": 500,
+                        "stream": False
+                    }
+                )
                 
-                # TODO: Integrate with LM Studio
-                log.write("[yellow]AI:[/yellow] [Thinking...]")
+                if response.status_code == 200:
+                    result = response.json()
+                    ai_message = result['choices'][0]['message']['content']
+                    # Clear thinking message and show response
+                    log.clear()
+                    log.write(f"[blue]You:[/blue] {message}")
+                    log.write(f"[yellow]AI:[/yellow] {ai_message}")
+                else:
+                    log.write(f"[red]Error:[/red] LM Studio returned {response.status_code}")
+                    
+        except Exception as e:
+            log.write(f"[red]Error:[/red] {str(e)}")
 
 
 class RAGTab(Container):
