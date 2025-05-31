@@ -335,6 +335,11 @@ class RAGTab(Container):
         except ImportError:
             log = self.query_one("#rag-results", RichLog)
             log.write("[red]RAG not available. Run: uv sync[/red]")
+        except Exception as e:
+            log = self.query_one("#rag-results", RichLog)
+            log.write(f"[yellow]RAG startup error: {str(e)}[/yellow]")
+            log.write("[yellow]RAG will be disabled for this session[/yellow]")
+            self.rag = None
     
     def refresh_collections(self) -> None:
         """Refresh the collections table"""

@@ -65,6 +65,8 @@ class SimpleRAG:
         self.lm_studio_url = "http://localhost:1234/v1/embeddings"
         print(f"📊 Using LM Studio embeddings: {embedding_model}")
         print("✅ Embedding model ready!")
+        
+        # Note: No SentenceTransformer initialization needed!
     
     def _get_embeddings(self, texts: List[str]) -> List[List[float]]:
         """Get embeddings using MLX with small Qwen model"""
