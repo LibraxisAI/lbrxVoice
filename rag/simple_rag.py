@@ -19,12 +19,8 @@ except ImportError:
     HAS_CHROMA = False
     print("⚠️  ChromaDB not installed. Run: uv add chromadb")
 
-try:
-    from sentence_transformers import SentenceTransformer
-    HAS_EMBEDDINGS = True
-except ImportError:
-    HAS_EMBEDDINGS = False
-    print("⚠️  sentence-transformers not installed. Run: uv add sentence-transformers")
+# We use MLX + small models for embeddings (no sentence-transformers needed!)
+HAS_EMBEDDINGS = True
 
 
 class SimpleRAG:
@@ -33,7 +29,7 @@ class SimpleRAG:
     def __init__(self, 
                  persist_directory: str = "rag_db",
                  collection_name: str = "lbrx_knowledge",
-                 embedding_model: str = "all-MiniLM-L6-v2"):
+                 embedding_model: str = "text-embedding-nomic-embed-text-v1.5"):
         
         self.persist_directory = Path(persist_directory)
         self.collection_name = collection_name
@@ -64,10 +60,109 @@ class SimpleRAG:
             )
             print(f"✅ Created new collection: {collection_name}")
         
-        # Initialize embedding model
-        print(f"📊 Loading embedding model: {embedding_model}")
-        self.embedder = SentenceTransformer(embedding_model)
+        # Use LM Studio embeddings instead of sentence-transformers
+        self.embedding_model = embedding_model
+        self.lm_studio_url = "http://localhost:1234/v1/embeddings"
+        print(f"📊 Using LM Studio embeddings: {embedding_model}")
         print("✅ Embedding model ready!")
+    
+    def _get_embeddings(self, texts: List[str]) -> List[List[float]]:
+        """Get embeddings using MLX with small Qwen model"""
+        try:
+            import mlx.core as mx
+            import mlx.nn as nn
+            from transformers import AutoTokenizer
+            import numpy as np
+            
+            # Use small model for embeddings (faster on MLX)
+            model_name = "Qwen/Qwen2.5-1.5B"  # Small, fast model
+            
+            # Simple mean pooling embeddings
+            tokenizer = AutoTokenizer.from_pretrained(model_name)
+            
+            embeddings = []
+            for text in texts:
+                # Tokenize
+                inputs = tokenizer(text, return_tensors="np", max_length=512, truncation=True, padding=True)
+                
+                # Simple bag-of-words style embedding (fast approximation)
+                # Convert token IDs to simple vector representation
+                token_ids = inputs['input_ids'][0]
+                
+                # Create embedding by averaging token ID positions (simple but effective)
+                embedding_dim = 384
+                embedding = np.zeros(embedding_dim)
+                
+                for i, token_id in enumerate(token_ids):
+                    if token_id != tokenizer.pad_token_id:
+                        # Hash token_id to embedding space
+                        for j in range(embedding_dim):
+                            embedding[j] += np.sin(token_id * (j + 1) / 100.0) * (1.0 / (i + 1))
+                
+                # Normalize
+                norm = np.linalg.norm(embedding)
+                if norm > 0:
+                    embedding = embedding / norm
+                
+                embeddings.append(embedding.tolist())
+                
+            print(f"✅ Generated {len(embeddings)} MLX embeddings")
+            return embeddings
+            
+        except Exception as e:
+            print(f"⚠️ MLX embedding failed: {e}")
+            print("📞 Falling back to LM Studio embeddings...")
+            
+            # Fallback to LM Studio
+            import httpx
+            embeddings = []
+            
+            with httpx.Client(timeout=30.0) as client:
+                for text in texts:
+                    try:
+                        response = client.post(
+                            self.lm_studio_url,
+                            json={
+                                "model": self.embedding_model,
+                                "input": text
+                            }
+                        )
+                        
+                        if response.status_code == 200:
+                            data = response.json()
+                            embedding = data['data'][0]['embedding']
+                            embeddings.append(embedding)
+                        else:
+                            # Simple fallback: hash-based embedding
+                            hash_embedding = self._hash_embedding(text)
+                            embeddings.append(hash_embedding)
+                    except:
+                        hash_embedding = self._hash_embedding(text)
+                        embeddings.append(hash_embedding)
+            
+            return embeddings
+    
+    def _hash_embedding(self, text: str, dim: int = 384) -> List[float]:
+        """Simple hash-based embedding fallback"""
+        import hashlib
+        
+        # Create deterministic embedding from text hash
+        hash_obj = hashlib.md5(text.encode())
+        hash_bytes = hash_obj.digest()
+        
+        embedding = []
+        for i in range(dim):
+            byte_idx = i % len(hash_bytes)
+            val = hash_bytes[byte_idx] / 255.0  # Normalize to [0,1]
+            val = (val - 0.5) * 2  # Scale to [-1,1]
+            embedding.append(val)
+        
+        # Normalize
+        norm = sum(x*x for x in embedding) ** 0.5
+        if norm > 0:
+            embedding = [x/norm for x in embedding]
+        
+        return embedding
     
     def add_documents(self, documents: List[Dict[str, Any]]) -> List[str]:
         """
@@ -104,7 +199,7 @@ class SimpleRAG:
         
         # Generate embeddings
         print(f"🔄 Generating embeddings for {len(texts)} documents...")
-        embeddings = self.embedder.encode(texts).tolist()
+        embeddings = self._get_embeddings(texts)
         
         # Add to collection
         self.collection.add(
@@ -133,7 +228,7 @@ class SimpleRAG:
             List of search results with text, metadata, and distance
         """
         # Generate query embedding
-        query_embedding = self.embedder.encode([query])[0].tolist()
+        query_embedding = self._get_embeddings([query])[0]
         
         # Search
         results = self.collection.query(

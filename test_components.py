@@ -61,14 +61,34 @@ try:
 except Exception as e:
     print(f"❌ MLX: {e}")
 
-# Test 5: TTS
-print("\n5️⃣ Testing TTS...")
+# Test 5: Edge TTS
+print("\n5️⃣ Testing Edge TTS...")
 try:
-    sys.path.insert(0, str(Path(__file__).parent))
-    from tts_servers.xtts_mlx import SimpleXTTSMLX
-    print("✅ XTTS MLX: OK (our implementation)")
+    # Test Edge TTS server
+    resp = client.get("http://localhost:8128/")
+    if resp.status_code == 200:
+        server_info = resp.json()
+        print("✅ Edge TTS Server: OK")
+        
+        # Test voices
+        resp = client.get("http://localhost:8128/v1/voices")
+        if resp.status_code == 200:
+            voices = resp.json()
+            print(f"✅ Edge TTS Voices: {len(voices)} available")
+        else:
+            print("❌ Edge TTS Voices: Failed")
+    else:
+        print(f"❌ Edge TTS Server: {resp.status_code}")
 except Exception as e:
-    print(f"❌ XTTS MLX: {e}")
+    print(f"❌ Edge TTS: {e}")
+    print("💡 Start Edge TTS server: uv run python tts_servers/edge_tts_server.py")
+    print("💡 Or run complete test: uv run python test_edge_tts_integration.py")
+
+# Test 5b: Legacy TTS (commented - not working)
+print("\n5️⃣b Testing legacy TTS servers...")
+print("❌ XTTS MLX: Disabled (not working)")
+print("❌ DIA TTS: Disabled (not working)")
+print("❌ CSM TTS: Disabled (not working)")
 
 # Test 6: Test fancy chat with LM Studio about the project
 print("\n6️⃣ Testing LM Studio chat with streaming...")

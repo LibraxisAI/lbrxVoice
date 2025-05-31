@@ -21,11 +21,14 @@ wheels/
 *.egg
 MANIFEST
 
-# Virtual environments
+# Virtual environments (FORCE IGNORE .venv - we use UV only!)
 .env
 .env.local
 .env.dragon
+.venv/
 .venv
+**/.venv/
+**/.venv
 env/
 venv/
 ENV/

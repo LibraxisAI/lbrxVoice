@@ -26,34 +26,45 @@ class TTSTab(Container):
     
     # Model configurations
     TTS_MODELS = {
+        "edge": {
+            "name": "Microsoft Edge TTS",
+            "languages": ["pl", "en", "de", "fr", "es", "it", "ja", "ko", "zh"],
+            "endpoint": "http://localhost:8128",
+            "supports_voice_cloning": False,
+            "active": True
+        },
         "xtts": {
             "name": "coqui/xtts-v2",
             "languages": ["pl", "en", "de", "fr", "es"],
             "endpoint": None,  # Would use local model
-            "supports_voice_cloning": True
+            "supports_voice_cloning": True,
+            "active": False
         },
         "dia": {
             "name": "nari-labs/Dia-1.6B",
             "languages": ["en"],
             "endpoint": "http://localhost:8124",
-            "supports_voice_cloning": False
+            "supports_voice_cloning": False,
+            "active": False
         },
         "csm": {
             "name": "senstella/csm-1b-mlx",
             "languages": ["en"],
             "endpoint": "http://localhost:8125",
-            "supports_voice_cloning": False
+            "supports_voice_cloning": False,
+            "active": False
         },
         "chatterbox": {
             "name": "ResembleAI/chatterbox",
             "languages": ["en"],
             "endpoint": None,
-            "supports_voice_cloning": True
+            "supports_voice_cloning": True,
+            "active": False
         }
     }
     
     # Reactive state
-    selected_model = reactive("xtts")
+    selected_model = reactive("edge")
     selected_language = reactive("pl")
     
     def __init__(self):
@@ -69,7 +80,8 @@ class TTSTab(Container):
             with Vertical(classes="tts-settings"):
                 yield Static("Select TTS Model:")
                 yield RadioSet(
-                    RadioButton("coqui/xtts-v2 [PL] ✅", id="model-xtts", value=True),
+                    RadioButton("Microsoft Edge TTS ✅", id="model-edge", value=True),
+                    RadioButton("coqui/xtts-v2 [PL]", id="model-xtts"),
                     RadioButton("nari-labs/Dia-1.6B", id="model-dia"),
                     RadioButton("senstella/csm-1b-mlx", id="model-csm"),
                     RadioButton("ResembleAI/chatterbox", id="model-chatterbox"),
@@ -246,8 +258,27 @@ class TTSTab(Container):
         # Prepare request
         endpoint = model_config["endpoint"]
         
-        # Check which server (DIA or CSM)
-        if "dia" in model_config["name"].lower():
+        # Check which server (Edge, DIA or CSM)
+        if "edge" in model_config["name"].lower():
+            # Edge TTS API format
+            voice_map = {
+                "female-pl-1": "pl_female",
+                "male-pl-1": "pl_male",
+                "female-en-1": "en_female",
+                "male-en-1": "en_male"
+            }
+            
+            response = await self.http_client.post(
+                f"{endpoint}/v1/tts/synthesize",
+                json={
+                    "text": text,
+                    "voice": voice_map.get(self.query_one("#voice-select").value, "pl_male"),
+                    "language": self.selected_language,
+                    "speed": float(self.query_one("#speed-select").value),
+                    "pitch": float(self.query_one("#pitch-select").value)
+                }
+            )
+        elif "dia" in model_config["name"].lower():
             # DIA API format
             response = await self.http_client.post(
                 f"{endpoint}/synthesize",
@@ -271,13 +302,37 @@ class TTSTab(Container):
         
         if response.status_code == 200:
             result = response.json()
-            job_id = result.get("job_id")
-            self.current_job_id = job_id
             
-            log.write(f"[yellow]Job created: {job_id}[/yellow]")
-            
-            # Poll for completion
-            await self.poll_job_status(endpoint, job_id)
+            # Edge TTS returns direct path
+            if "audio_path" in result:
+                audio_path = result["audio_path"]
+                log.write(f"[green]✓ Speech generated successfully![/green]")
+                
+                # Save to outputs
+                output_dir = Path("outputs/tts")
+                output_dir.mkdir(parents=True, exist_ok=True)
+                
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                output_file = output_dir / f"speech_{self.selected_model}_{timestamp}.mp3"
+                
+                # Copy from edge server output
+                import shutil
+                shutil.copy(audio_path, output_file)
+                
+                log.write(f"[green]Saved to: {output_file}[/green]")
+                
+                # Store for preview
+                self.last_audio_file = str(output_file)
+                self.query_one("#preview-tts").disabled = False
+            else:
+                # Other APIs with job system
+                job_id = result.get("job_id")
+                self.current_job_id = job_id
+                
+                log.write(f"[yellow]Job created: {job_id}[/yellow]")
+                
+                # Poll for completion
+                await self.poll_job_status(endpoint, job_id)
         else:
             log.write(f"[red]API error: {response.status_code}[/red]")
     
@@ -386,7 +441,7 @@ class TTSTab(Container):
         """Preview generated speech"""
         log = self.query_one("#tts-log", RichLog)
         
-        if not hasattr(self, 'last_audio_data'):
+        if not hasattr(self, 'last_audio_file') and not hasattr(self, 'last_audio_data'):
             log.write("[red]No audio to preview![/red]")
             return
         
@@ -396,21 +451,42 @@ class TTSTab(Container):
             sys.path.insert(0, str(Path(__file__).parent.parent.parent))
             from audio.recorder import AudioPlayer
             
-            # Create player
-            player = AudioPlayer(sample_rate=self.last_sample_rate)
-            
-            log.write("[cyan]▶️ Playing audio...[/cyan]")
-            
-            # Play audio
-            player.play(self.last_audio_data, blocking=False)
-            
-            # Update button states
-            self.query_one("#preview-tts").disabled = True
-            self.query_one("#stop-tts").disabled = False
-            
-            # Wait for playback to finish
-            duration = len(self.last_audio_data) / self.last_sample_rate
-            await asyncio.sleep(duration)
+            # Check if we have file or data
+            if hasattr(self, 'last_audio_file'):
+                # Play from file (Edge TTS)
+                import pygame
+                pygame.mixer.init()
+                pygame.mixer.music.load(self.last_audio_file)
+                
+                log.write("[cyan]▶️ Playing audio file...[/cyan]")
+                
+                # Update button states
+                self.query_one("#preview-tts").disabled = True
+                self.query_one("#stop-tts").disabled = False
+                
+                pygame.mixer.music.play()
+                
+                # Wait for playback to finish
+                while pygame.mixer.music.get_busy():
+                    await asyncio.sleep(0.1)
+                
+                pygame.mixer.quit()
+            else:
+                # Play from data (local TTS)
+                player = AudioPlayer(sample_rate=self.last_sample_rate)
+                
+                log.write("[cyan]▶️ Playing audio...[/cyan]")
+                
+                # Play audio
+                player.play(self.last_audio_data, blocking=False)
+                
+                # Update button states
+                self.query_one("#preview-tts").disabled = True
+                self.query_one("#stop-tts").disabled = False
+                
+                # Wait for playback to finish
+                duration = len(self.last_audio_data) / self.last_sample_rate
+                await asyncio.sleep(duration)
             
             # Reset buttons
             self.query_one("#preview-tts").disabled = False
@@ -487,6 +563,7 @@ class TTSTab(Container):
         if event.radio_set.id == "model-select":
             # Map button ID to model key
             model_map = {
+                "model-edge": "edge",
                 "model-xtts": "xtts",
                 "model-dia": "dia",
                 "model-csm": "csm",

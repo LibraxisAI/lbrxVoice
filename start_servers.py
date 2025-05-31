@@ -64,9 +64,13 @@ def main():
     start_server("whisper-realtime", "python -m whisper_servers realtime", 8126, {"REALTIME_PORT": "8126"})
     time.sleep(3)
     
-    # Start XTTS server
-    start_server("xtts-rest", "python tts_servers/xtts_rest_api.py", 8127)
+    # Start Edge TTS server (działa!)
+    start_server("edge-tts", "python tts_servers/edge_tts_server.py", 8128)
     time.sleep(3)
+    
+    # Start XTTS server (commented out - not working)
+    # start_server("xtts-rest", "python tts_servers/xtts_rest_api.py", 8127)
+    # time.sleep(3)
     
     # Other TTS servers (commented out for now - need to fix first)
     # start_server("dia-ws", f"DIA_WS_PORT=8129 python -m tts_servers dia-ws", 8129)
@@ -80,7 +84,8 @@ def main():
     print("\n✅ Servers started:")
     print("  - Whisper Batch: http://localhost:8123")
     print("  - Whisper Realtime: ws://localhost:8126")
-    print("  - XTTS REST: http://localhost:8127")
+    print("  - Edge TTS: http://localhost:8128")
+    # print("  - XTTS REST: http://localhost:8127")
     # print("  - DIA WebSocket: ws://localhost:8129")
     # print("  - DIA REST: http://localhost:8132")
     # print("  - CSM REST: http://localhost:8135")
