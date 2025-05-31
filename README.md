@@ -3,7 +3,7 @@
 ## 🚀 Quick Install (macOS)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/LibraxisAI/lbrxVoice/lbrxConversational/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/LibraxisAI/lbrxVoice/main/install.sh | sh
 ```
 
 That's it! The installer will:

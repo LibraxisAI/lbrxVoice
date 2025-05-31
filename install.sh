@@ -1,6 +1,6 @@
 #!/bin/bash
 # lbrxVoice installer - can be piped from curl
-# Usage: curl -fsSL https://raw.githubusercontent.com/LibraxisAI/lbrxVoice/lbrxConversational/install.sh | sh
+# Usage: curl -fsSL https://raw.githubusercontent.com/LibraxisAI/lbrxVoice/main/install.sh | sh
 
 echo "🚀 Installing lbrxVoice..."
 echo "=========================="
@@ -14,7 +14,7 @@ if [ -d "$INSTALL_DIR" ]; then
     cd "$INSTALL_DIR" && git pull
 else
     echo "📥 Cloning repository..."
-    git clone -b lbrxConversational https://github.com/LibraxisAI/lbrxVoice.git "$INSTALL_DIR"
+    git clone https://github.com/LibraxisAI/lbrxVoice.git "$INSTALL_DIR"
 fi
 
 cd "$INSTALL_DIR" || exit 1
