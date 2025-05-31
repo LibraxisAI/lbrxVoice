@@ -198,25 +198,30 @@ Odpowiedz w formacie JSON."""
     async def _generate_speech(self, text: str, output_dir: Path) -> Path:
         """Generuj mowę z tekstu"""
         
-        if not HAS_MLX_AUDIO:
-            raise ImportError("MLX-Audio not available")
+        # Use our XTTS implementation
+        from tts_servers.xtts_mlx import SimpleXTTSMLX
+        import soundfile as sf
         
         # Skróć tekst jeśli za długi
         if len(text) > 500:
             text = text[:497] + "..."
         
-        # Generuj audio
-        output_file = output_dir / "response"
+        # Initialize TTS
+        tts = SimpleXTTSMLX()
         
-        mlx_generate_audio(
+        # Generate audio
+        audio_data = tts.synthesize(
             text=text,
-            model=self.tts_model,
-            speed=1.0,
-            file_name=str(output_file.stem),
-            output_dir=str(output_dir)
+            language="pl",  # Polish
+            voice="female-pl-1",
+            speed=1.0
         )
         
-        return output_file.with_suffix('.wav')
+        # Save audio
+        output_file = output_dir / "response.wav"
+        sf.write(str(output_file), audio_data, tts.sample_rate)
+        
+        return output_file
 
 
 async def demo_pipeline():

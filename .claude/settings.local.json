@@ -42,7 +42,9 @@
       "mcp__memory__create_relations",
       "Bash(mv:*)",
       "Bash(tree:*)",
-      "Bash(git clone:*)"
+      "Bash(git clone:*)",
+      "Bash(screen:*)",
+      "Bash(timeout:*)"
     ],
     "deny": []
   },

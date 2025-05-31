@@ -474,7 +474,7 @@ class VetRAGApp(App):
                 yield Select(
                     [(model, model) for model in self.available_models],
                     id="model-selector",
-                    value=DEFAULT_LLM_MODEL,
+                    value=DEFAULT_LLM_MODEL if DEFAULT_LLM_MODEL in self.available_models else (self.available_models[0] if self.available_models else None),
                     prompt="Select LLM Model"
                 )
                 
