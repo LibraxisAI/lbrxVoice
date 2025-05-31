@@ -71,9 +71,7 @@ class TranscribeVoiceTab(Container):
                 
                 yield Static("\nSpectrogram:")
                 yield AudioSpectrogram(
-                    id="voice-spectrogram",
-                    width=50,
-                    height=8
+                    id="voice-spectrogram"
                 )
                 
                 with Horizontal(classes="record-controls"):

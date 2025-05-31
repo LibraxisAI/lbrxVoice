@@ -55,38 +55,79 @@ class LbrxUltimateTUI(App):
     """Main TUI application with 6 tabs"""
     
     CSS = """
+    /* Responsive layout for all screen sizes */
     TabbedContent {
         height: 100%;
+        width: 100%;
     }
     
     TabPane {
         padding: 1;
+        height: 100%;
+        width: 100%;
     }
     
     .tab-content {
         height: 100%;
+        width: 100%;
         overflow-y: auto;
     }
     
-    DataTable {
-        height: 80%;
-    }
-    
-    RichLog {
-        border: solid green;
+    /* Responsive layouts for different components */
+    .voice-layout {
+        layout: horizontal;
         height: 100%;
     }
     
+    .audio-controls {
+        width: 1fr;
+        min-width: 30;
+        max-width: 50;
+        height: 100%;
+        padding: 1;
+    }
+    
+    .voice-settings {
+        width: 1fr;
+        min-width: 30;
+        height: 100%;
+        padding: 1;
+    }
+    
+    /* Make data tables responsive */
+    DataTable {
+        height: 80%;
+        width: 100%;
+    }
+    
+    /* Make logs responsive */
+    RichLog {
+        border: solid green;
+        height: 100%;
+        width: 100%;
+    }
+    
+    /* Responsive form elements */
     Input {
         margin: 1 0;
+        width: 100%;
     }
     
     Button {
         margin: 1 0;
+        min-width: 15;
     }
     
     ProgressBar {
         margin: 1 0;
+        width: 100%;
+    }
+    
+    /* Audio spectrogram responsive */
+    #voice-spectrogram {
+        height: 100%;
+        width: 100%;
+        min-height: 10;
     }
     """
     

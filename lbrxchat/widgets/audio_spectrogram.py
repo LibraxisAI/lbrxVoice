@@ -25,20 +25,20 @@ class AudioSpectrogram(Widget):
     CHARS = " ·▁▂▃▄▅▆▇█"
     
     def __init__(self, 
-                 width: int = 60,
-                 height: int = 12,
                  history_size: int = 60,
                  **kwargs):
         super().__init__(**kwargs)
-        self.spec_width = width
-        self.spec_height = height
         self.history_size = history_size
+        
+        # Dynamic dimensions based on widget size
+        self.spec_width = 60  # Will be updated in get_content_width()
+        self.spec_height = 12  # Will be updated in get_content_height()
         
         # History buffer for spectrogram
         self.history = deque(maxlen=history_size)
         
-        # Frequency bins
-        self.freq_bins = height
+        # Frequency bins - will be updated dynamically
+        self.freq_bins = self.spec_height
         self.freq_labels = self._generate_freq_labels()
         
         # Initialize with zeros
@@ -120,6 +120,8 @@ class AudioSpectrogram(Widget):
     
     def render(self) -> RenderableType:
         """Render the spectrogram"""
+        # Update dimensions based on current widget size
+        self._update_dimensions()
         lines = []
         
         # Title
@@ -153,12 +155,13 @@ class AudioSpectrogram(Widget):
             
             lines.append(line)
         
-        # Time axis
-        lines.append(" " * 8 + "└" + "─" * min(60, len(self.history)))
-        lines.append(" " * 8 + " Past " + " " * (min(60, len(self.history)) - 10) + " Now")
+        # Time axis - responsive width
+        available_width = max(20, min(self.spec_width, len(self.history)))
+        lines.append(" " * 8 + "└" + "─" * available_width)
+        lines.append(" " * 8 + " Past " + " " * max(0, (available_width - 10)) + " Now")
         
-        # Level meter
-        level_bar_width = 40
+        # Level meter - responsive width
+        level_bar_width = max(20, min(60, self.spec_width - 10))
         level_filled = int(self.audio_level * level_bar_width)
         level_bar = "█" * level_filled + "░" * (level_bar_width - level_filled)
         
@@ -192,3 +195,23 @@ class AudioSpectrogram(Widget):
             self.history.append(np.zeros(self.freq_bins))
         self.audio_level = 0.0
         self.refresh()
+    
+    def _update_dimensions(self):
+        """Update dimensions based on widget size"""
+        # Get available space from widget size
+        size = self.size
+        if size.width > 0 and size.height > 0:
+            # Leave space for labels and borders
+            self.spec_width = max(20, size.width - 15)
+            self.spec_height = max(6, size.height - 8)
+            
+            # Update frequency bins if height changed
+            if self.freq_bins != self.spec_height:
+                self.freq_bins = self.spec_height
+                self.freq_labels = self._generate_freq_labels()
+                
+                # Adjust history buffer for new freq_bins
+                new_history = deque(maxlen=self.history_size)
+                for _ in range(len(self.history)):
+                    new_history.append(np.zeros(self.freq_bins))
+                self.history = new_history
