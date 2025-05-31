@@ -1,5 +1,5 @@
 #!/bin/bash
-# Skrypt uruchamiający lbrxWhisper z pełnym logowaniem
+# UV-native log runner for lbrxWhisper
 
 # Ścieżka do projektu
 PROJECT_DIR="/Users/maciejgad/LIBRAXIS/Repos/VoiceProcessing/lbrxWhisper"
@@ -12,23 +12,14 @@ mkdir -p "$LOG_DIR"
 # Przejście do katalogu projektu
 cd "$PROJECT_DIR" || exit 1
 
-# Aktywacja środowiska wirtualnego
-if [ -f "venv/bin/activate" ]; then
-    source venv/bin/activate
-else
-    echo "⚠️  Brak venv! Tworzę nowe środowisko..."
-    python3.11 -m venv venv
-    source venv/bin/activate
-    pip install -r requirements.txt
-fi
-
 echo "🚀 Uruchamiam lbrxWhisper Ultimate TUI"
 echo "📁 Logi zapisywane do: $LOG_DIR"
 echo "📝 Sesja: $TIMESTAMP"
 echo ""
 
-# Uruchomienie z pełnym logowaniem
-python run_ultimate_tui.py \
+# Uruchomienie przez UV z pełnym logowaniem
+# UV automatycznie użyje właściwego Pythona i środowiska
+uv run python run_ultimate_tui.py \
     2>&1 | tee "$LOG_DIR/session_${TIMESTAMP}.log"
 
 # Zapisz kod wyjścia
