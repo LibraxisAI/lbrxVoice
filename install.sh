@@ -1,27 +1,48 @@
 #!/bin/bash
-# UV-native installation for lbrxWhisper
-# No venv bullshit - UV handles everything
+# lbrxVoice installer - can be piped from curl
+# Usage: curl -fsSL https://raw.githubusercontent.com/LibraxisAI/lbrxVoice/lbrxConversational/install.sh | sh
 
-echo "🚀 lbrxWhisper UV Installation"
-echo "=============================="
+echo "🚀 Installing lbrxVoice..."
+echo "=========================="
 
-# Check if UV is installed
-if ! command -v uv &> /dev/null; then
-    echo "❌ UV not found! Install it first:"
-    echo "  curl -LsSf https://astral.sh/uv/install.sh | sh"
-    exit 1
+# Install to home directory
+INSTALL_DIR="$HOME/lbrxVoice"
+
+# Clone repository
+if [ -d "$INSTALL_DIR" ]; then
+    echo "📁 Directory exists, updating..."
+    cd "$INSTALL_DIR" && git pull
+else
+    echo "📥 Cloning repository..."
+    git clone -b lbrxConversational https://github.com/LibraxisAI/lbrxVoice.git "$INSTALL_DIR"
 fi
 
-# That's it. UV sync does EVERYTHING.
-echo ""
-echo "📦 Running UV sync..."
+cd "$INSTALL_DIR" || exit 1
+
+# Check for UV
+if ! command -v uv &> /dev/null; then
+    echo "📦 Installing UV..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    export PATH="$HOME/.cargo/bin:$PATH"
+fi
+
+# Install dependencies
+echo "🔧 Installing dependencies..."
 uv sync
 
+# Create global command
+echo "🚀 Creating lbrxvoice command..."
+mkdir -p "$HOME/.local/bin"
+cat > "$HOME/.local/bin/lbrxvoice" << 'EOF'
+#!/bin/bash
+cd "$HOME/lbrxVoice" && uv run python run_ultimate_tui.py "$@"
+EOF
+chmod +x "$HOME/.local/bin/lbrxvoice"
+
 echo ""
-echo "✅ Done! UV installed everything."
+echo "✅ Installation complete!"
 echo ""
-echo "To run:"
-echo "  uv run python run_ultimate_tui.py"
+echo "Run with: lbrxvoice"
+echo "(You may need to restart terminal or add ~/.local/bin to PATH)"
 echo ""
-echo "With logs:"
-echo "  uv run ./run_with_logs.sh"
+echo "No i zajebiście! 🚀"

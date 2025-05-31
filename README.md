@@ -1,206 +1,138 @@
-# lbrxWhisper
+# lbrxVoice - 6-Tab Voice AI Platform
 
-Complete speech processing pipeline with Whisper ASR and TTS models, optimized for Apple Silicon using MLX.
-
-## Features
-
-### Speech Recognition (ASR)
-- **Batch Transcription Server**:
-  - Process pre-recorded audio/video files with Whisper large-v3 model
-  - REST API with OpenAI-compatible endpoints
-  - Support for all ffmpeg-compatible audio/video formats
-
-- **Real-time Transcription Server**:
-  - Stream audio transcription in real-time with WebSockets
-  - Interactive TUI dashboard with spectrograms and timestamp editing
-  - Low-latency processing with smaller Whisper models
-
-### Text-to-Speech (TTS)
-- **DIA 1.6B TTS**:
-  - WebSocket endpoint for real-time streaming synthesis
-  - REST API for batch processing and fine-tuning
-  - Multi-speaker dialogue support with `[S1]`, `[S2]` tags
-  - Non-verbal communications (laughs, coughs, sighs)
-  - Voice cloning capabilities
-
-- **CSM-MLX TTS**:
-  - REST API endpoint
-  - Multiple speaker voices (0-3)
-  - Optimized for MLX on Apple Silicon
-
-### AI Conversational Agent
-- **Voice Chat with Qwen3-8B**:
-  - Real-time voice conversations
-  - Speech → Qwen3 → TTS pipeline
-  - Support for both DIA and CSM voices
-
-## Setup
-
-### Prerequisites
-
-- Apple Silicon Mac (M1/M2/M3)
-- Python 3.12 or higher
-- FFmpeg installed on your system
-- uv package manager
-
-### Installation
+## 🚀 Quick Install (macOS)
 
 ```bash
-# Clone the repository
-git clone https://github.com/LibraxisAI/lbrxWhisper.git
-cd lbrxWhisper
-
-# Create virtual environment
-uv venv .venv
-source .venv/bin/activate
-
-# Install dependencies
-uv pip install -e .
+curl -fsSL https://raw.githubusercontent.com/LibraxisAI/lbrxVoice/lbrxConversational/install.sh | sh
 ```
 
-### Download Models
+That's it! The installer will:
+- ✅ Install UV package manager
+- ✅ Clone the repository to `~/lbrxVoice`
+- ✅ Install all dependencies
+- ✅ Create `lbrxvoice` command
 
-1. **Whisper models** are downloaded automatically on first use
-2. **DIA model** conversion:
-   ```bash
-   python dia_mlx_converter.py
-   ```
-3. **CSM-MLX** is already available in the system
+## 🎯 Features
 
-## Usage
+### 6-Tab Terminal UI
+1. **Chat** - LM Studio integration with streaming responses
+2. **RAG** - Vector search knowledge base with ChromaDB
+3. **Files** - Batch transcription with semantic naming
+4. **Voice** - Live transcription with audio spectrogram
+5. **TTS** - Text-to-speech synthesis (XTTS v2)
+6. **VoiceAI** - Complete conversational pipeline
 
-### Starting the Servers
+### Core Technologies
+- **Whisper v3 large**: Speech-to-text on MLX
+- **LM Studio API**: Local LLM integration (Qwen3, Llama, etc.)
+- **XTTS v2**: Multi-language TTS with Polish support
+- **ChromaDB**: Vector database for RAG
+- **MLX Framework**: Apple Silicon optimization
 
-#### Whisper Servers
+## 🏃 Running
+
+After installation:
 ```bash
-# Batch transcription server (port 8123)
-whisper-batch-server
-
-# Real-time transcription server (port 8000)
-whisper-realtime-server
+lbrxvoice
 ```
 
-#### TTS Servers
+Or manually:
 ```bash
-# DIA WebSocket server (port 8124)
-python -m tts_servers dia-ws
-
-# DIA REST API (port 8125)
-python -m tts_servers dia-rest
-
-# CSM REST API (port 8126)
-python -m tts_servers csm-rest
+cd ~/lbrxVoice
+uv run python run_ultimate_tui.py
 ```
 
-### API Documentation
+## Navigation
+- **F1-F6**: Switch between tabs
+- **Tab**: Navigate elements
+- **Enter**: Select/Send
+- **Ctrl+C**: Exit
 
-Once running, access the API documentation at:
-- Whisper Batch: http://localhost:8123/docs
-- Whisper Real-time: http://localhost:8000/docs
-- DIA REST: http://localhost:8125/docs
-- CSM REST: http://localhost:8126/docs
+## 🐉 Using Dragon (512GB M3 Ultra)
 
-### Testing the Pipeline
-
-#### Full Pipeline Test
+Connect to Dragon via Tailscale:
 ```bash
-python test_tts_pipeline.py
+cd ~/lbrxVoice
+./use_dragon.sh
 ```
 
-#### Conversational AI
+Or manually set in `.env`:
+```
+LLM_ENDPOINT=http://100.82.232.70:1234/v1/chat/completions
+```
+
+## 📋 Prerequisites
+
+- macOS with Apple Silicon (M1/M2/M3)
+- Python 3.11 (managed by UV)
+- FFmpeg: `brew install ffmpeg`
+- LM Studio: https://lmstudio.ai
+
+## 🛠️ Manual Installation
+
 ```bash
-python conversational_agent.py
+# Install UV
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Clone and setup
+git clone -b lbrxConversational https://github.com/LibraxisAI/lbrxVoice.git
+cd lbrxVoice
+uv sync
+
+# Run
+uv run python run_ultimate_tui.py
 ```
 
-#### Real-time Voice Chat
+## 📁 Project Structure
+
+```
+lbrxVoice/
+├── whisper_servers/     # ASR servers (batch & realtime)
+├── tts_servers/         # TTS implementations
+├── lbrxchat/           # 6-tab TUI application
+│   └── tabs/           # Individual tab implementations
+├── rag/                # RAG system with ChromaDB
+├── audio/              # Audio recording/playback
+└── config/             # LLM endpoint configuration
+```
+
+## 🔧 Configuration
+
+Create `.env` file:
+```env
+# LLM Settings
+LLM_ENDPOINT=http://localhost:1234/v1/chat/completions
+LLM_MODEL=qwen3-8b-mlx
+
+# For OpenRouter
+# LLM_ENDPOINT=https://openrouter.ai/api/v1/chat/completions
+# OPENROUTER_API_KEY=your-key-here
+```
+
+## 📖 Documentation
+
+- [FRESH_INSTALL.md](FRESH_INSTALL.md) - Detailed setup guide
+- [HOW-TO-INSTALL.md](HOW-TO-INSTALL.md) - Step-by-step instructions
+- [UV_INSTALL.md](UV_INSTALL.md) - UV package manager guide
+
+## 🧪 Testing
+
 ```bash
-python voice_chat_realtime.py
+# Test all components
+uv run python test_components.py
+
+# Test TTS API
+uv run python test_tts_api.py
+
+# Test audio recording
+uv run python test_audio_recording.py
 ```
 
-### Example API Usage
+## 👥 Authors
 
-#### TTS Generation (DIA)
-```python
-import requests
+- [Maciej Gad](https://github.com/yourusername) - Veterinarian & AI enthusiast
+- [Klaudiusz](https://github.com/anthropics/claude) - AI assistant
 
-# Synchronous generation
-response = requests.post(
-    "http://localhost:8125/synthesize_sync",
-    json={
-        "text": "[S1] Hello from DIA! [S2] This is amazing.",
-        "temperature": 0.8
-    }
-)
-audio_base64 = response.json()["audio_data"]
-```
+---
 
-#### TTS Generation (CSM)
-```python
-# With speaker selection
-response = requests.post(
-    "http://localhost:8126/synthesize_sync",
-    json={
-        "text": "Hello from CSM model!",
-        "speaker_id": "1"  # Choose speaker 0-3
-    }
-)
-```
-
-#### Full Voice Pipeline
-```python
-from test_tts_pipeline import TTSPipelineTester
-
-tester = TTSPipelineTester()
-# Generate speech
-audio = tester.test_dia_rest("Hello world!")
-# Transcribe it back
-text = tester.test_whisper_batch(audio, "test.wav")
-```
-
-## Configuration
-
-Environment variables:
-- `BATCH_PORT`: Whisper batch port (default: 8123)
-- `REALTIME_PORT`: Whisper realtime port (default: 8000)
-- `DIA_WS_PORT`: DIA WebSocket port (default: 8124)
-- `DIA_REST_PORT`: DIA REST port (default: 8125)
-- `CSM_REST_PORT`: CSM REST port (default: 8126)
-- `MODELS_DIR`: Model storage directory
-- `HF_TOKEN`: Hugging Face token for model downloads
-
-## Project Structure
-
-```
-lbrxWhisper/
-├── whisper_servers/     # ASR servers
-│   ├── batch/          # Batch transcription
-│   └── realtime/       # Real-time streaming
-├── tts_servers/        # TTS servers
-│   ├── dia/           # DIA 1.6B implementation
-│   ├── csm/           # CSM-MLX wrapper
-│   └── common/        # Shared utilities
-├── mlx_whisper/        # Core Whisper MLX
-├── conversational_agent.py  # AI chat with voice
-├── voice_chat_realtime.py   # Real-time voice loop
-└── test_tts_pipeline.py     # Integration tests
-```
-
-## Performance
-
-On M3 Max (48GB RAM):
-- Full pipeline uses ~20-25GB RAM
-- Whisper large-v3: ~3-4GB
-- DIA 1.6B: ~6-7GB
-- CSM 1B: ~4GB
-- Qwen3-8B-Q4: ~6-8GB
-
-## License
-
-Licensed under Apache 2.0. See LICENSE file for details.
-
-## Acknowledgments
-
-- [MLX](https://github.com/ml-explore/mlx) by Apple
-- [DIA](https://github.com/nari-labs/dia) by Nari Labs
-- [CSM](https://github.com/senstella/csm-mlx) by Senstella
-- [Whisper](https://github.com/openai/whisper) by OpenAI
+**No i zajebiście!** 🚀
