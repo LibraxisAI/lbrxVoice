@@ -40,10 +40,10 @@ from tools.whisper_config import WhisperConfig
 from lbrx_voice_pipeline import VoicePipeline
 
 # Import tab components
-from tabs.transcribe_files import TranscribeFilesTab
-from tabs.transcribe_voice import TranscribeVoiceTab
-from tabs.tts import TTSTab
-from tabs.voice_ai import VoiceAITab
+from lbrxchat.tabs.transcribe_files import TranscribeFilesTab
+from lbrxchat.tabs.transcribe_voice import TranscribeVoiceTab
+from lbrxchat.tabs.tts import TTSTab
+from lbrxchat.tabs.voice_ai import VoiceAITab
 
 # Server clients
 import httpx

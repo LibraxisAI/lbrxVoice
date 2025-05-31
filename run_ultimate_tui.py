@@ -126,14 +126,11 @@ def main():
     print("Press Ctrl+C to exit\n")
     
     try:
-        from lbrxchat.lbrx_ultimate_tui import main as run_tui
-        run_tui()
+        # Run TUI directly as a subprocess to avoid import issues
+        import subprocess
+        subprocess.run([sys.executable, "lbrxchat/lbrx_ultimate_tui.py"])
     except KeyboardInterrupt:
         print("\n\n👋 Goodbye!")
-    except ImportError as e:
-        print(f"\n❌ Error importing TUI: {e}")
-        print("Make sure all dependencies are installed:")
-        print("  uv pip install -r requirements.txt")
     except Exception as e:
         print(f"\n❌ Error: {e}")
 
