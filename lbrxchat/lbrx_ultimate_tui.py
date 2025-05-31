@@ -38,6 +38,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 # Import existing components
 from tools.whisper_config import WhisperConfig
 from lbrx_voice_pipeline import VoicePipeline
+from config.llm_config import llm_config
 
 # Import tab components
 from lbrxchat.tabs.transcribe_files import TranscribeFilesTab
@@ -183,17 +184,17 @@ class ChatTab(Container):
             
             async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.post(
-                    "http://localhost:1234/v1/chat/completions",
-                    json={
-                        "model": "qwen3-8b-mlx",
-                        "messages": [
+                    llm_config.endpoint,
+                    json=llm_config.get_request_params(
+                        messages=[
                             {"role": "system", "content": "You are a helpful AI assistant. Be concise."},
                             {"role": "user", "content": message}
                         ],
-                        "temperature": 0.7,
-                        "max_tokens": 500,
-                        "stream": True
-                    }
+                        temperature=0.7,
+                        max_tokens=500,
+                        stream=True
+                    ),
+                    headers=llm_config.get_headers()
                 )
                 
                 if response.status_code == 200:

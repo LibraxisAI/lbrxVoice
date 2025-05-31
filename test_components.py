@@ -76,8 +76,8 @@ try:
     fancy_prompt = {
         "model": "qwen3-8b",
         "messages": [
-            {"role": "system", "content": "Odpowiadaj po polsku. Bądź entuzjastyczny o projektach AI."},
-            {"role": "user", "content": "Opowiedz o projekcie lbrxWhisper - to nowoczesny voice AI z 6 zakładkami, Whisper ASR, LM Studio i XTTS TTS na Apple Silicon MLX. Skończ frazą 'No i zajebiście!'"}
+            {"role": "system", "content": "Odpowiadaj po polsku. Bądź entuzjastyczny o projektach AI. Używaj faktów technicznych."},
+            {"role": "user", "content": "Projekt lbrxVoice łączy OpenAI Whisper v3 do ASR, LM Studio API dla modeli językowych, oraz Coqui TTS (konkretnie XTTS v2) dla syntezy mowy - wszystko zoptymalizowane pod Apple Silicon z MLX framework. Ma 6 zakładek w TUI. Opisz krótko zalety takiego stack'u i zakończ 'No i zajebiście!'"}
         ],
         "temperature": 0.7,
         "stream": True
