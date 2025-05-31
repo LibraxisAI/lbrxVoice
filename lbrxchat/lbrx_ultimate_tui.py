@@ -243,6 +243,11 @@ class ChatTab(Container):
 class RAGTab(Container):
     """Tab 2: RAG knowledge base management"""
     
+    def __init__(self):
+        super().__init__()
+        self.rag = None
+        self.collections = []
+    
     def compose(self) -> ComposeResult:
         yield Static("[bold]📚 RAG Knowledge Base Manager[/bold]", classes="tab-title")
         
@@ -250,21 +255,82 @@ class RAGTab(Container):
             with Container(classes="rag-list"):
                 yield Static("Knowledge Bases:")
                 yield DataTable(id="rag-table")
+                
+                # Query interface
+                yield Static("\n[bold]Query Knowledge Base:[/bold]")
+                yield Input(placeholder="Ask a question...", id="rag-query")
+                yield Button("Search", id="rag-search", variant="primary")
+                yield RichLog(id="rag-results", max_lines=10)
             
             with Container(classes="rag-actions"):
-                yield Button("Add Graph", id="rag-add")
-                yield Button("Remove Graph", id="rag-remove")
+                yield Button("Create Collection", id="rag-create")
+                yield Button("Delete Collection", id="rag-delete")
                 yield Button("Import JSONL", id="rag-import")
                 yield Button("Export JSONL", id="rag-export")
+                yield Button("Add Document", id="rag-add-doc")
+                yield Button("Refresh", id="rag-refresh")
     
     def on_mount(self) -> None:
+        # Initialize RAG if available
+        try:
+            from rag.simple_rag import SimpleRAG
+            self.rag = SimpleRAG()
+            self.refresh_collections()
+        except ImportError:
+            log = self.query_one("#rag-results", RichLog)
+            log.write("[red]RAG not available. Run: uv sync[/red]")
+    
+    def refresh_collections(self) -> None:
+        """Refresh the collections table"""
+        if not self.rag:
+            return
+            
         table = self.query_one("#rag-table", DataTable)
-        table.add_columns("Name", "Documents", "Status")
+        table.clear()
+        table.add_columns("Name", "Documents", "Size")
         
-        # Sample data
-        table.add_row("MLX Documentation", "1,234", "✅ Active")
-        table.add_row("Veterinary (Merck)", "5,678", "✅ Active")
-        table.add_row("Whisper Tricks", "456", "⏸️ Inactive")
+        # Get current collection info
+        info = self.rag.get_collection_info()
+        table.add_row(
+            info['name'], 
+            str(info['document_count']),
+            "Active"
+        )
+        
+        # List all collections
+        for name in self.rag.list_collections():
+            if name != info['name']:
+                table.add_row(name, "?", "Inactive")
+    
+    async def on_button_pressed(self, event: Button.Pressed) -> None:
+        button_id = event.button.id
+        log = self.query_one("#rag-results", RichLog)
+        
+        if button_id == "rag-search":
+            query = self.query_one("#rag-query", Input).value
+            if query and self.rag:
+                log.clear()
+                log.write(f"[blue]Searching:[/blue] {query}")
+                
+                # Search with RAG
+                response = self.rag.query_with_llm(query)
+                log.write(f"\n[green]Answer:[/green] {response}")
+        
+        elif button_id == "rag-add-doc":
+            # Simple demo - add current timestamp as document
+            if self.rag:
+                from datetime import datetime
+                doc = {
+                    "text": f"Test document added at {datetime.now().isoformat()}",
+                    "metadata": {"type": "test"}
+                }
+                self.rag.add_documents([doc])
+                log.write("[green]Added test document[/green]")
+                self.refresh_collections()
+        
+        elif button_id == "rag-refresh":
+            self.refresh_collections()
+            log.write("[green]Refreshed collections[/green]")
 
 
 

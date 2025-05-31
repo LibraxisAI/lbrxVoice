@@ -31,4 +31,6 @@ dependencies = [
     "torchaudio>=2.0.0",
     "uvicorn>=0.32.0",
     "websockets>=14.0",
+    "chromadb>=0.4.0",
+    "sentence-transformers>=2.2.0",
 ]
