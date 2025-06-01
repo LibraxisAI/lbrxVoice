@@ -68,28 +68,14 @@ class RealtimeTranscriptionService:
             audio_array = np.frombuffer(audio_data, np.int16).astype(np.float32) / 32768.0
             
             # Transcribe the audio chunk
-            # First we need to convert audio to proper format
-            # MLX Whisper expects a file path or audio data in specific format
-            import tempfile
-            import soundfile as sf
-            
-            # Save audio to temporary file
-            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp_file:
-                sf.write(tmp_file.name, audio_array, self._sample_rate)
-                temp_path = tmp_file.name
-            
-            try:
-                result = await asyncio.to_thread(
-                    mlx_whisper.transcribe,
-                    temp_path,
-                    path_or_hf_repo=str(self._model_path) if self._model_path.exists() else f"mlx-community/whisper-{settings.REALTIME_MODEL}",
-                    language=None,  # Auto-detect language
-                    word_timestamps=True,  # Include word-level timestamps
-                )
-            finally:
-                # Clean up temp file
-                import os
-                os.unlink(temp_path)
+            # Pass NumPy array directly - no file I/O needed!
+            result = await asyncio.to_thread(
+                mlx_whisper.transcribe,
+                audio_array,
+                model=self._model,
+                language=None,  # Auto-detect language
+                word_timestamps=True,  # Include word-level timestamps
+            )
             
             return result
         except Exception as e:

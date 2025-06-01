@@ -140,10 +140,11 @@ class TranscriptionService:
                 )
                 
                 # Transcribe the audio file
-                # Don't pass path_or_hf_repo when we already have a loaded model
+                # Use pre-loaded model to avoid reloading on each request
                 result = await asyncio.to_thread(
                     mlx_whisper.transcribe,
                     str(wav_file),
+                    model=self._model,
                     word_timestamps=job.word_timestamps,
                     language=job.language,
                     initial_prompt=job.prompt,

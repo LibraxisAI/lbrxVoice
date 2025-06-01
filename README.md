@@ -174,8 +174,8 @@ uv run python start_servers.py
 
 ## 👥 Authors
 
-- [Maciej Gad](https://github.com/yourusername) - Veterinarian & AI enthusiast
-- [Klaudiusz](https://github.com/anthropics/claude) - AI assistant
+- [Monika Szymanska](https://github.com/m-szymanska) - Veterinarian & Data Scientist
+- [Klaudiusz](https://github.com/anthropics/claude) - AI Developer & Coding Genius
 
 ---
 
